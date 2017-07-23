@@ -54,14 +54,14 @@ def get_ma(symbol, timeframe, period, source='close'):
 
 def get_balance(symbol):
     balance = polo.returnAvailableAccountBalances()
-    bal_sym = balance["exchange"]
+    bal_sym = balance["margin"]
 
     print("I have %s %s!" % (bal_sym, symbol) )
     print("I have %s %s symbol!" % ( balance, symbol))
     return float(bal_sym[symbol])
 
 def get_btc_balance(symbol):
-    balance = polo.returnCompleteBalances(account='exchange')
+    balance = polo.returnCompleteBalances(account='margin')
     bal_sym = balance[symbol]
 
     #print("I have %s %s!" % (balance[symbol], symbol) )
