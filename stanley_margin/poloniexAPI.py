@@ -3,6 +3,7 @@ import time
 import poloniex  # pip3 install https://github.com/s4w3d0ff/python-poloniex/archive/v0.4.3.zip
 
 from passwords import PRIVATE_API_KEY, PRIVATE_SECRET_KEY
+from collections import defaultdict
 
 api_key = PRIVATE_API_KEY
 secret_key = PRIVATE_SECRET_KEY
@@ -53,17 +54,24 @@ def get_ma(symbol, timeframe, period, source='close'):
 
 
 def get_balance(symbol):
+    my_dict = defaultdict(int)
+    coin =  symbol.replace("BTC_", "")
     balance = polo.returnAvailableAccountBalances()
-    bal_sym = balance["margin"]
+
+    if coin in balance:
+        bal_sym = balance["margin"][coin]
+    else:
+        bal_sym = 0
 
     print("I have %s %s!" % (bal_sym, symbol) )
-    print("I have %s %s symbol!" % ( balance, symbol))
-    return float(bal_sym[symbol])
+    #print("I have %s %s symbol!" % ( balance, symbol))
+    return float(bal_sym)
 
 def get_btc_balance(symbol):
     balance = polo.returnCompleteBalances(account='margin')
-    bal_sym = balance[symbol]
+    #bal_sym = balance[symbol]
 
-    #print("I have %s %s!" % (balance[symbol], symbol) )
-    #print("I have %s %s!" % ( bal_sym[symbol], symbol))
-    return float(bal_sym["btcValue"])
+    print("I have %s %s!" % (balance, symbol) )
+    #print("I have %s %s!" % ( bal_sym, symbol))
+    return balance
+    #return float(bal_sym["btcValue"])

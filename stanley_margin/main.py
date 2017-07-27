@@ -33,10 +33,10 @@ if __name__ == "__main__":
     while True:
 
 
-        current_btc = poloniexAPI.get_balance('BTC')
-        current_eth = poloniexAPI.get_balance('ETH')
-        current_xrp = poloniexAPI.get_balance('XRP')
-        current_total = poloniexAPI.get_btc_balance('BTC') + poloniexAPI.get_btc_balance('ETH') + poloniexAPI.get_btc_balance('XRP')
+        current_btc = poloniexAPI.get_btc_balance('BTC_XRP')
+        current_eth = poloniexAPI.get_balance('BTC_ETH')
+        current_xrp = poloniexAPI.get_balance('BTC_XRP')
+        current_total =  current_btc + current_eth + current_xrp
         print("Balance:%f -- BTC = %f -- ETH = %f -- XRP = %f" % (current_total, current_btc, current_eth, current_xrp))
         #print("Balance:%f -- BTC = %f " % (current_btc, current_btc))
 
