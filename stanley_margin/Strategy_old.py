@@ -5,7 +5,7 @@ PERIOD_MA_FAST = 20
 # region ### Methods
 def calc_amount_alt(price, coin):
     current_balance = poloniexAPI.get_balance(coin)  # make it more flexible...
-    print("My alt trade balance = %s at price %f" % (current_balance, price))
+    print("My trade balance = %s at price %f" % (current_balance, price))
 
     relative_balance = current_balance / 8  # 50% of current balance
     #relative_balance = 0.1  # my balance = 0, FIX IT!
@@ -14,54 +14,22 @@ def calc_amount_alt(price, coin):
 
 # region ### Methods
 def calc_amount_btc(price):
-    current_balance = poloniexAPI.get_balance('BTC_XRP')  # make it more flexible...
-    print("My btc trade balance = %s at price %f" % (current_balance, price))
+    current_balance = poloniexAPI.get_balance('BTC')  # make it more flexible...
+    print("My trade balance = %s at price %f" % (current_balance, price))
 
     relative_balance = current_balance / 8  # 50% of current balance
     #relative_balance = 0.1  # my balance = 0, FIX IT!
     amount = relative_balance / price
     return amount
 
-
-# region ### Methods
-def calc_margin_alt(price, symbol):
-    current_balance = poloniexAPI.polo.returnTradableBalances()  # make it more flexible...
-    #print("My trade balance = %s at price %f" % (current_balance, price))
-
-    coin =  symbol.replace("BTC_", "")
-    coin_balance = float(current_balance[symbol][coin])
-    print("My malt trade balance = %s at price %f" % (coin_balance, price))
-
-    relative_balance = coin_balance*0.9  # 2= 50% of current balance
-    #relative_balance = 0.1  # my balance = 0, FIX IT!
-    amount = relative_balance
-    return amount
-
-
-# region ### Methods
-def calc_margin_btc(price, symbol):
-    current_balance = poloniexAPI.polo.returnTradableBalances()  # make it more flexible...
-
-    print("Current Margin = %f" % (current_margin))
-
-    btc_balance = float(current_balance[symbol]["BTC"])
-    print("My mbtc trade balance = %s at price %f" % (btc_balance, price))
-
-    relative_balance = btc_balance*0.9 # 2= 50% of current balance
-    #relative_balance = 0.021  # 2= 50% of current balance
-
-    #relative_balance = 0.1  # my balance = 0, FIX IT!
-    amount = relative_balance / price
-    return amount
-
-def buy_margin(ask, symbol):
-    amount = calc_margin_btc(ask, symbol)
+def buy(ask, symbol):
+    amount = calc_amount_btc(ask)
     #SYMBOL = 'BTC_ETH'
     print("Buy %s amount = %s at price %f" % (symbol, amount, ask))
 
     # uncomment to make trades
     #res = poloniexAPI.polo.buy(symbol, ask, amount, orderType='immediateOrCancel')
-    res = poloniexAPI.polo.marginBuy(symbol, ask, amount, lendingRate=0.00)  # if you want margin trade
+    res = poloniexAPI.polo.marginBuy(symbol, ask, amount, lendingRate=2.4)  # if you want margin trade
     print("Res %s at price %f" % (res, ask))
 
     #res = 'success'
@@ -70,15 +38,15 @@ def buy_margin(ask, symbol):
     return res
 
 
-def sell_margin(bid, symbol):
-    #coin =  symbol.replace("BTC_", "")
-    amount = calc_margin_alt(bid, symbol)
+def sell(bid, symbol):
+    coin =  symbol.replace("BTC_", "")
+    amount = calc_amount_alt(bid, coin)
     #SYMBOL = 'BTC_ETH'
     print("Sell %s amount = %s at price %f" % (symbol, amount, bid))
 
     # uncomment to make trades
     #res = poloniexAPI.polo.sell(symbol, bid, amount, orderType='immediateOrCancel')
-    res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.00)  # if you want margin trade
+    res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=2.4)  # if you want margin trade
     print("Res %s at price %f" % (res, bid))
 
     #res = 'success'  # fix it when uncomment!
@@ -86,7 +54,7 @@ def sell_margin(bid, symbol):
     #    raise BaseException('### Trade Sell error')
     return res
 
-def buy(ask, symbol):
+def buy_margin(ask, symbol):
     amount = calc_amount_btc(ask)
     #SYMBOL = 'BTC_ETH'
     print("Buy %s amount = %s at price %f" % (symbol, amount, ask))
@@ -102,7 +70,7 @@ def buy(ask, symbol):
     return res
 
 
-def sell(bid, symbol):
+def sell_margin(bid, symbol):
     coin =  symbol.replace("BTC_", "")
     amount = calc_amount_alt(bid, coin)
     #SYMBOL = 'BTC_ETH'
@@ -131,54 +99,41 @@ class Strategy:
         self.SYMBOL = symbol
         self.ticket = 0
         self.confirm = 3
-    def crossover_strategy(self, time_period, fast_period, slow_period):
+    def crossover_strategy(self, fast_period, slow_period):
 
-        fast_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=fast_period)
-        slow_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=slow_period)
-
-        current_btc = poloniexAPI.get_margin_btc_balance(self.SYMBOL)
-        current_alt = poloniexAPI.get_margin_balance(self.SYMBOL)
+        fast_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=5, period=fast_period)
+        slow_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=5, period=slow_period)
 
         last_price = poloniexAPI.get_orderbook(self.SYMBOL)
-        alt_converted = float(current_alt)  * float(last_price['bids'][0][0])
+        ask = float(last_price['asks'][0][0])*1.01
+        bid = float(last_price['bids'][0][0])*0.99
 
-        ask = float(last_price['asks'][0][0])*1.02
-        bid = float(last_price['bids'][0][0])*0.98
-        current_margin = poloniexAPI.get_current_margin()
-        print("%s Alt %f at price %f" % (self.SYMBOL, alt_converted, current_btc))
-
-        if self.is_buy_open and slow_ma < fast_ma and current_btc > 0.02 and current_margin > 0.42:
-            self.is_buy_open = False
-
-        if self.is_sell_open and slow_ma > fast_ma and alt_converted > 0.02 and current_margin > 0.42:
-            self.is_sell_open = False
-
-        if self.is_buy_open and slow_ma > fast_ma :
+        if self.is_buy_open and slow_ma > fast_ma:
             if self.ticket < self.confirm:
                 self.ticket = self.ticket + 1
             else:
-                sell_margin(bid, self.SYMBOL)
+                sell(bid, self.SYMBOL)
                 self.ticket = 0
                 self.is_sell_open = True
                 self.is_buy_open = False
 
-        elif self.is_sell_open and slow_ma < fast_ma :
+        elif self.is_sell_open and slow_ma < fast_ma:
             if self.ticket < self.confirm:
                 self.ticket = self.ticket + 1
             else:
-                buy_margin(ask, self.SYMBOL)
+                buy(ask, self.SYMBOL)
                 self.ticket = 0
                 self.is_sell_open = False
                 self.is_buy_open = True
 
-        if self.is_buy_open is False and self.is_sell_open is False and slow_ma < fast_ma and current_btc > 0.02 and current_margin > 0.42:
+        if self.is_buy_open is False and self.is_sell_open is False and slow_ma < fast_ma:
             # first buy
-            buy_margin(ask, self.SYMBOL)
+            buy(ask, self.SYMBOL)
             self.is_buy_open = True
 
-        elif self.is_sell_open is False and self.is_buy_open is False and slow_ma > fast_ma  and alt_converted > 0.02 and current_margin > 0.42:
+        elif self.is_sell_open is False and self.is_buy_open is False and slow_ma > fast_ma:
             # first sell
-            sell_margin(bid, self.SYMBOL)
+            sell(bid, self.SYMBOL)
             self.is_sell_open = True
 
 
