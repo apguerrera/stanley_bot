@@ -46,10 +46,17 @@ def get_ma(symbol, timeframe, period, source='close'):
     :param source: Default calculate MA by Close. Select Open, High, Close of Low.
     :return: Moving Average value
     """
-    data = get_chart_data(symbol, timeframe, period)
-    s = 0
-    for item in data:
-        s += float(item[source])
+    c = 0
+    while (c < period):
+        s = 0
+        c = 0
+        data = get_chart_data(symbol, timeframe, period)
+
+        for item in data:
+            s += float(item[source])
+            c += 1
+
+    print("I have s: %s and c: %s!" % (s, c) )
     return s / period
 
 
@@ -68,10 +75,31 @@ def get_balance(symbol):
     return float(bal_sym)
 
 def get_btc_balance(symbol):
-    balance = polo.returnCompleteBalances(account='margin')
+    balance = polo.returnTradableBalances()
     #bal_sym = balance[symbol]
 
-    print("I have %s %s!" % (balance, symbol) )
-    #print("I have %s %s!" % ( bal_sym, symbol))
-    return balance
+    print("I have %s %s!" % (balance[symbol]["BTC"], symbol) )
+    #print("I have %s %s!" % ( bal_sym["btcValue"], symbol))
+    return float(balance[symbol]["BTC"])
     #return float(bal_sym["btcValue"])
+
+def get_margin_balance(symbol):
+    coin =  symbol.replace("BTC_", "")
+    balance = polo.returnTradableBalances()
+    coin_balance = float(balance[symbol][coin])
+    relative_balance = coin_balance*0.99  # 2= 50% of current balance
+
+
+
+    print("My malt trade balance = %s at price %f" % (coin, coin_balance))
+    #print("I have %s %s symbol!" % ( balance, symbol))
+    return float(relative_balance)
+
+def get_current_margin():
+
+    balance = polo.returnMarginAccountSummary()
+
+
+    print("My current margin = %s" % (balance["currentMargin"]))
+    #print("I have %s %s symbol!" % ( balance, symbol))
+    return float(balance["currentMargin"])

@@ -5,13 +5,14 @@ from Strategy import Strategy
 # region ### GLOBALS
 PERIOD_MA_SLOW = 120
 PERIOD_MA_FAST = 20
+PERIOD_MA_TIME = 5
 SYMBOL = 'BTC_ETH'
 # endregion
 
 
 def test_info(symbol):
     slow_ma = poloniexAPI.get_ma(symbol, timeframe=5, period=PERIOD_MA_SLOW)
-    time.sleep(0.1)  # safe
+    time.sleep(0.2)  # safe
     fast_ma = poloniexAPI.get_ma(symbol, timeframe=5, period=PERIOD_MA_FAST)
 
     ohlc = poloniexAPI.get_chart_data(symbol, period=PERIOD_MA_SLOW)
@@ -42,10 +43,10 @@ if __name__ == "__main__":
 
         # one or more strategies below
         #strategy_eth.crossover_strategy(fast_period=PERIOD_MA_FAST, slow_period=PERIOD_MA_SLOW)
-        strategy_xrp.crossover_strategy(fast_period=PERIOD_MA_FAST, slow_period=PERIOD_MA_SLOW)
+        strategy_xrp.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, slow_period=PERIOD_MA_SLOW)
 
         #test_info(SYMBOL)
-        test_info('BTC_ETH')
+        #test_info('BTC_ETH')
         test_info('BTC_XRP')
         print('--------------')
 
