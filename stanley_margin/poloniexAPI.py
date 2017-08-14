@@ -69,7 +69,7 @@ def get_balance(symbol):
     else:
         bal_sym = 0
 
-    print("I have %s %s!" % (bal_sym, symbol) )
+    #print("I have %s %s!" % (bal_sym, symbol) )
     #print("I have %s %s symbol!" % ( balance, symbol))
     return float(bal_sym)
 
@@ -77,7 +77,7 @@ def get_btc_balance(symbol):
     balance = polo.returnTradableBalances()
     #bal_sym = balance[symbol]
 
-    print("I have %s %s!" % (balance[symbol]["BTC"], symbol) )
+    #print("I have %s %s!" % (balance[symbol]["BTC"], symbol) )
     #print("I have %s %s!" % ( bal_sym["btcValue"], symbol))
     return float(balance[symbol]["BTC"])
     #return float(bal_sym["btcValue"])
@@ -87,9 +87,7 @@ def get_margin_balance(symbol):
     balance = polo.returnTradableBalances()
     coin_balance = float(balance[symbol][coin])
     relative_balance = coin_balance*0.99  # 2= 50% of current balance
-
-
-
+    
     print("My malt trade balance = %s at price %f" % (coin, coin_balance))
     #print("I have %s %s symbol!" % ( balance, symbol))
     return float(relative_balance)

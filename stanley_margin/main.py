@@ -4,6 +4,7 @@ from Strategy import Strategy
 
 # region ### GLOBALS
 PERIOD_MA_SLOW = 120
+PERIOD_MA_MID = 60
 PERIOD_MA_FAST = 20
 PERIOD_MA_TIME = 5
 SYMBOL = 'BTC_ETH'
@@ -43,7 +44,7 @@ if __name__ == "__main__":
 
         # one or more strategies below
         #strategy_eth.crossover_strategy(fast_period=PERIOD_MA_FAST, slow_period=PERIOD_MA_SLOW)
-        strategy_xrp.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, slow_period=PERIOD_MA_SLOW)
+        strategy_xrp.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
 
         #test_info(SYMBOL)
         #test_info('BTC_ETH')
