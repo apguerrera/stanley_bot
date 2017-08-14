@@ -149,30 +149,8 @@ class Strategy:
         print("%s confirm %f at ticket %f" % (self.SYMBOL, self.confirm, self.ticket))
         print("%s sell open %f buy open %f" % (self.SYMBOL, self.is_sell_open, self.is_buy_open))
 
-        if self.is_buy_open and slow_ma < fast_ma and current_btc > 0.02 and current_margin > 0.41:
-            self.is_buy_open = False
 
-        if self.is_sell_open and slow_ma > fast_ma and alt_converted > 0.02 and current_margin > 0.41:
-            self.is_sell_open = False
-
-        if self.is_buy_open and slow_ma > fast_ma :
-            if self.ticket < self.confirm:
-                self.ticket = self.ticket + 1
-            else:
-                sell_margin(bid, self.SYMBOL)
-                self.ticket = 0
-                self.is_sell_open = True
-                self.is_buy_open = False
-
-        elif self.is_sell_open and slow_ma < fast_ma :
-            if self.ticket < self.confirm:
-                self.ticket = self.ticket + 1
-            else:
-                buy_margin(ask, self.SYMBOL)
-                self.ticket = 0
-                self.is_sell_open = False
-                self.is_buy_open = True
-
+        # initate trade
         if self.is_buy_open is False and self.is_sell_open is False and slow_ma < fast_ma and current_btc > 0.02 :
             # first buy
             buy_margin(ask, self.SYMBOL)
@@ -182,6 +160,35 @@ class Strategy:
             # first sell
             sell_margin(bid, self.SYMBOL)
             self.is_sell_open = True
+
+        # trade strategy
+        if self.is_buy_open:
+            if  slow_ma > fast_ma :
+                if self.ticket < self.confirm:
+                    self.ticket = self.ticket + 1
+                else:
+                    sell_margin(bid, self.SYMBOL)
+                    self.ticket = 0
+                    self.is_sell_open = True
+                    self.is_buy_open = False
+            elif slow_ma < fast_ma:
+                if current_btc > 0.02 and current_margin > 0.41:
+                    buy_margin(ask, self.SYMBOL)
+                    self.is_buy_open = True
+
+        elif self.is_sell_open:
+            if  slow_ma < fast_ma :
+                if self.ticket < self.confirm:
+                    self.ticket = self.ticket + 1
+                else:
+                    buy_margin(ask, self.SYMBOL)
+                    self.ticket = 0
+                    self.is_sell_open = False
+                    self.is_buy_open = True
+            elif slow_ma > fast_ma:
+                if alt_converted > 0.02 and current_margin > 0.41:
+                    sell_margin(bid, self.SYMBOL)
+                    self.is_sell_open = True
 
 
 #    def supertrend_strategy(self, fast_period, slow_period):

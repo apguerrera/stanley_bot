@@ -56,7 +56,6 @@ def get_ma(symbol, timeframe, period, source='close'):
             s += float(item[source])
             c += 1
 
-    print("I have s: %s and c: %s!" % (s, c) )
     return s / period
 
 
