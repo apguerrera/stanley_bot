@@ -1,7 +1,7 @@
 import poloniexAPI
 import time
 from Strategy import Strategy
-
+ 
 # region ### GLOBALS
 PERIOD_MA_SLOW = 120
 PERIOD_MA_FAST = 20

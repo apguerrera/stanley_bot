@@ -10,7 +10,7 @@ PERIOD_MA_TIME = 5
 SYMBOL = 'BTC_ETH'
 # endregion
 
-
+ 
 def test_info(symbol):
     slow_ma = poloniexAPI.get_ma(symbol, timeframe=5, period=PERIOD_MA_SLOW)
     time.sleep(0.2)  # safe
