@@ -220,7 +220,7 @@ class Strategy:
                 if current_btc > 0.08 and current_margin > 0.45:
                     buy_margin(ask, self.SYMBOL)
                     self.is_buy_open = True
-            if fast_ma < mid_ma and self.is_buy_open is True :
+            if fast_ma < mid_ma and self.is_buy_open is True and current_margin > 0.45:
                 exit_sell_margin(bid, self.SYMBOL)
                 self.is_buy_open = False
                 self.ticket = 0
@@ -235,7 +235,7 @@ class Strategy:
                 if alt_converted > 0.08 and current_margin > 0.45:
                     sell_margin(bid, self.SYMBOL)
                     self.is_sell_open = True
-            if fast_ma > mid_ma and self.is_sell_open is True :
+            if fast_ma > mid_ma and self.is_sell_open is True and current_margin > 0.45:
                 exit_buy_margin(ask, self.SYMBOL)
                 self.is_sell_open = False
                 self.ticket = 0
