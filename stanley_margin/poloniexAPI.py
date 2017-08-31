@@ -58,7 +58,7 @@ def get_ma(symbol, timeframe, period, source='close'):
 
     return s / period
 
- 
+
 def get_balance(symbol):
     my_dict = defaultdict(int)
     coin =  symbol.replace("BTC_", "")
@@ -76,17 +76,20 @@ def get_balance(symbol):
 def get_btc_balance(symbol):
     balance = polo.returnTradableBalances()
     #bal_sym = balance[symbol]
+    coin_balance = float(balance[symbol]["BTC"])
+    relative_balance = coin_balance*0.9  # 2= 50% of current balance
 
     #print("I have %s %s!" % (balance[symbol]["BTC"], symbol) )
     #print("I have %s %s!" % ( bal_sym["btcValue"], symbol))
-    return float(balance[symbol]["BTC"])
+    return float(relative_balance)
+
     #return float(bal_sym["btcValue"])
 
 def get_margin_balance(symbol):
     coin =  symbol.replace("BTC_", "")
     balance = polo.returnTradableBalances()
     coin_balance = float(balance[symbol][coin])
-    relative_balance = coin_balance*0.99  # 2= 50% of current balance
+    relative_balance = coin_balance*0.90  # 2= 50% of current balance
 
     print("My malt trade balance = %s at price %f" % (coin, coin_balance))
     #print("I have %s %s symbol!" % ( balance, symbol))
