@@ -171,9 +171,13 @@ class Strategy:
         slow_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=slow_period)
         time.sleep(0.2)  # safe
         mid_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=mid_period)
+        time.sleep(0.2)  # safe
 
         current_btc = poloniexAPI.get_btc_balance(self.SYMBOL)
+        time.sleep(0.2)  # safe
+
         current_alt = poloniexAPI.get_margin_balance(self.SYMBOL)
+        time.sleep(0.2)  # safe
 
         last_price = poloniexAPI.get_orderbook(self.SYMBOL)
         alt_converted = float(current_alt)  * float(last_price['bids'][0][0])
