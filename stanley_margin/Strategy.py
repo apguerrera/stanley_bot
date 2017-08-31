@@ -191,24 +191,24 @@ class Strategy:
 
         # initate trade
         if self.initiate == 0 :
-            if self.is_buy_open is False and self.is_sell_open is False and slow_ma < fast_ma and current_btc > 0.8 : #and slow_ma < mid_ma
+            if self.is_buy_open is False and self.is_sell_open is False and slow_ma < fast_ma and current_btc > 0.08 : #and slow_ma < mid_ma
                 # first buy
                 buy_margin(ask, self.SYMBOL)
                 self.is_buy_open = True
                 initiate = 1
 
-            elif self.is_sell_open is False and self.is_buy_open is False and slow_ma > fast_ma  and alt_converted > 0.8 : # and slow_ma > mid_ma
+            elif self.is_sell_open is False and self.is_buy_open is False and slow_ma > fast_ma  and alt_converted > 0.08 : # and slow_ma > mid_ma
                 # first sell
                 sell_margin(bid, self.SYMBOL)
                 self.is_sell_open = True
                 initiate = 1
 
-            elif self.is_sell_open is False and self.is_buy_open is False and slow_ma > fast_ma  and alt_converted < 0.8 : # and slow_ma > mid_ma
+            elif self.is_sell_open is False and self.is_buy_open is False and slow_ma > fast_ma  and alt_converted < 0.08 : # and slow_ma > mid_ma
                 # first sell
                 #sell_margin(bid, self.SYMBOL)
                 self.is_sell_open = True
                 initiate = 1
-            elif self.is_sell_open is False and self.is_buy_open is False and slow_ma < fast_ma  and current_btc < 0.8 : # and slow_ma > mid_ma
+            elif self.is_sell_open is False and self.is_buy_open is False and slow_ma < fast_ma  and current_btc < 0.08 : # and slow_ma > mid_ma
                 # first sell
                 #sell_margin(bid, self.SYMBOL)
                 self.is_buy_open = True
@@ -220,7 +220,7 @@ class Strategy:
                 if current_btc > 0.08 and current_margin > 0.45:
                     buy_margin(ask, self.SYMBOL)
                     self.is_buy_open = True
-            if fast_ma < mid_ma:
+            if fast_ma < mid_ma and self.is_buy_open is True :
                 exit_sell_margin(bid, self.SYMBOL)
                 self.is_buy_open = False
                 self.ticket = 0
@@ -235,7 +235,7 @@ class Strategy:
                 if alt_converted > 0.08 and current_margin > 0.45:
                     sell_margin(bid, self.SYMBOL)
                     self.is_sell_open = True
-            if fast_ma > mid_ma:
+            if fast_ma > mid_ma and self.is_sell_open is True :
                 exit_buy_margin(ask, self.SYMBOL)
                 self.is_sell_open = False
                 self.ticket = 0
