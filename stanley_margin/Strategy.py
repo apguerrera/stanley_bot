@@ -191,28 +191,29 @@ class Strategy:
 
         # initate trade
         if self.initiate == 0 :
-            if self.is_buy_open is False and self.is_sell_open is False and slow_ma < fast_ma and current_btc > 0.08 : #and slow_ma < mid_ma
-                # first buy
-                buy_margin(ask, self.SYMBOL)
-                self.is_buy_open = True
-                initiate = 1
-
-            elif self.is_sell_open is False and self.is_buy_open is False and slow_ma > fast_ma  and alt_converted > 0.08 : # and slow_ma > mid_ma
-                # first sell
-                sell_margin(bid, self.SYMBOL)
-                self.is_sell_open = True
-                initiate = 1
-
-            elif self.is_sell_open is False and self.is_buy_open is False and slow_ma > fast_ma  and alt_converted < 0.08 : # and slow_ma > mid_ma
-                # first sell
-                #sell_margin(bid, self.SYMBOL)
-                self.is_sell_open = True
-                initiate = 1
-            elif self.is_sell_open is False and self.is_buy_open is False and slow_ma < fast_ma  and current_btc < 0.08 : # and slow_ma > mid_ma
-                # first sell
-                #sell_margin(bid, self.SYMBOL)
-                self.is_buy_open = True
-                initiate = 1
+            if self.is_buy_open is False and self.is_sell_open is False:
+                if slow_ma > fast_ma:
+                    if alt_converted > 0.08 :
+                        # first sell
+                        sell_margin(bid, self.SYMBOL)
+                        self.is_sell_open = True
+                        initiate = 1
+                    elif alt_converted < 0.08 :
+                        # first sell
+                        #sell_margin(bid, self.SYMBOL)
+                        self.is_sell_open = True
+                        initiate = 1
+                elif slow_ma < fast_ma:
+                    if current_btc > 0.08:
+                        # first buy
+                        buy_margin(ask, self.SYMBOL)
+                        self.is_buy_open = True
+                        initiate = 1
+                    elif current_btc < 0.08:
+                        # first sell
+                        #sell_margin(bid, self.SYMBOL)
+                        self.is_buy_open = True
+                        initiate = 1
 
         # trade strategy
         if self.is_buy_open:
