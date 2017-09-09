@@ -185,7 +185,8 @@ class Strategy:
         ask = float(last_price['asks'][0][0])*1.02
         bid = float(last_price['bids'][0][0])*0.98
         current_margin = poloniexAPI.get_current_margin()
-        print("%s Alt %f at price %f" % (self.SYMBOL, alt_converted, current_btc))
+        print("%s alt_converted %f at current_btc %f with margin %f" % (self.SYMBOL, alt_converted, current_btc, current_margin))
+        print("%s ask %f at bid %f" % (self.SYMBOL, ask, bid))
         print("%s confirm %f at ticket %f" % (self.SYMBOL, self.confirm, self.ticket))
         print("%s sell open %f buy open %f" % (self.SYMBOL, self.is_sell_open, self.is_buy_open))
 
