@@ -31,21 +31,38 @@ def test_info(symbol):
 if __name__ == "__main__":
     strategy_ltc = Strategy('BTC_LTC')
     strategy_str = Strategy('BTC_STR')
-    strategy_eth = Strategy('BTC_ETH')
     strategy_xrp = Strategy('BTC_XRP')
+    strategy_eth = Strategy('BTC_ETH')
     strategy_fct = Strategy('BTC_FCT')
+    strategy_bts = Strategy('BTC_BTS')
+    strategy_xmr = Strategy('BTC_XMR')
+    strategy_dash = Strategy('BTC_DASH')
+    strategy_maid = Strategy('BTC_MAID')
+    strategy_doge = Strategy('BTC_DOGE')
+    strategy_clam = Strategy('BTC_CLAM')
+
+    current_btc = poloniexAPI.get_btc_balance('BTC_XRP')
+    current_str = poloniexAPI.get_balance('BTC_STR')
+    current_eth = poloniexAPI.get_balance('BTC_ETH')
+    current_xrp = poloniexAPI.get_balance('BTC_XRP')
+    current_ltc = poloniexAPI.get_balance('BTC_LTC')
+    current_fct = poloniexAPI.get_balance('BTC_FCT')
+    current_bts = poloniexAPI.get_balance('BTC_BTS')
+    current_xmr = poloniexAPI.get_balance('BTC_XMR')
+    current_dash = poloniexAPI.get_balance('BTC_DASH')
+    current_maid = poloniexAPI.get_balance('BTC_MAID')
+    current_doge = poloniexAPI.get_balance('BTC_DOGE')
+    current_clam = poloniexAPI.get_balance('BTC_CLAM')
+
+    current_total =  (current_btc + current_eth + current_xrp + current_ltc + current_fct + current_str +
+            current_bts + current_xmr + current_dash + current_maid + current_doge + current_clam )
+    #print("Balance:%f -- BTC = %f -- ETH = %f -- XRP = %f" % (current_total, current_btc, current_eth, current_xrp))
+    print("Balance:%f  " % (current_btc))
+
 
     while True:
 
 
-        current_btc = poloniexAPI.get_btc_balance('BTC_XRP')
-        current_eth = poloniexAPI.get_balance('BTC_ETH')
-        current_xrp = poloniexAPI.get_balance('BTC_XRP')
-        current_ltc = poloniexAPI.get_balance('BTC_LTC')
-        current_fct = poloniexAPI.get_balance('BTC_FCT')
-        current_total =  current_btc + current_eth + current_xrp + current_ltc + current_fct
-        #print("Balance:%f -- BTC = %f -- ETH = %f -- XRP = %f" % (current_total, current_btc, current_eth, current_xrp))
-        print("Balance:%f  " % (current_btc))
 
         # one or more strategies below
         strategy_ltc.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
@@ -56,7 +73,7 @@ if __name__ == "__main__":
 
         #test_info(SYMBOL)
         #test_info('BTC_ETH')
-        test_info('BTC_XRP')
+        #test_info('BTC_XRP')
         print('--------------')
 
         time.sleep(5)
