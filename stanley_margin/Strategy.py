@@ -71,18 +71,12 @@ def buy_margin(ask, symbol):
     return res
 
 def exit_buy_margin(ask, symbol):
-    amount = calc_margin_btc(ask, symbol) * 0.4
-    #SYMBOL = 'BTC_ETH'
-    print("Exit %s amount = %s at price %f" % (symbol, amount, ask))
 
-    # uncomment to make trades
-    #res = poloniexAPI.polo.buy(symbol, ask, amount, orderType='immediateOrCancel')
-    res = poloniexAPI.polo.marginBuy(symbol, ask, amount, lendingRate=0.02)  # if you want margin trade
+    #coin =  symbol.replace("BTC_", "")
+    #SYMBOL = 'BTC_ETH'
+    res = poloniexAPI.polo.closeMarginPosition(currencyPair=symbol)  # if you want margin trade
     print("Res %s at price %f" % (res, ask))
 
-    #res = 'success'
-    #if res != 'success':
-    #    raise BaseException('### Trade Buy error')
     return res
 
 def sell_margin(bid, symbol):
@@ -103,18 +97,10 @@ def sell_margin(bid, symbol):
 
 def exit_sell_margin(bid, symbol):
     #coin =  symbol.replace("BTC_", "")
-    amount = calc_margin_alt(bid, symbol) * 0.4
     #SYMBOL = 'BTC_ETH'
-    print("Sell %s amount = %s at price %f" % (symbol, amount, bid))
-
-    # uncomment to make trades
-    #res = poloniexAPI.polo.sell(symbol, bid, amount, orderType='immediateOrCancel')
-    res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
+    res = poloniexAPI.polo.closeMarginPosition(currencyPair=symbol)  # if you want margin trade
     print("Res %s at price %f" % (res, bid))
 
-    #res = 'success'  # fix it when uncomment!
-    #if res != 'success':
-    #    raise BaseException('### Trade Sell error')
     return res
 
 def buy(ask, symbol):
@@ -162,7 +148,7 @@ class Strategy:
     def __init__(self, symbol):
         self.SYMBOL = symbol
         self.ticket = 0
-        self.confirm = 3
+        self.confirm = 1
         self.initiate = 0
     def crossover_strategy(self, time_period, fast_period, mid_period, slow_period):
 
@@ -175,110 +161,94 @@ class Strategy:
 
         current_btc = poloniexAPI.get_btc_balance(self.SYMBOL)
         time.sleep(0.2)  # safe
-
         current_alt = poloniexAPI.get_margin_balance(self.SYMBOL)
         time.sleep(0.2)  # safe
-
         last_price = poloniexAPI.get_orderbook(self.SYMBOL)
         alt_converted = float(current_alt)  * float(last_price['bids'][0][0])
-
         ask = float(last_price['asks'][0][0])*1.02
         bid = float(last_price['bids'][0][0])*0.98
         current_margin = poloniexAPI.get_current_margin()
-        print("%s alt_converted %f at current_btc %f with margin %f" % (self.SYMBOL, alt_converted, current_btc, current_margin))
+
+        margin_type = poloniexAPI.get_margin_type(self.SYMBOL)
+        time.sleep(0.2)  # safe
+        if margin_type == "short":
+            self.is_buy_open = False
+            self.is_sell_open = True
+        elif margin_type == "long":
+            self.is_buy_open = True
+            self.is_sell_open = False
+        elif margin_type == "none":
+            self.is_buy_open = False
+            self.is_sell_open = False
+
+        print("%s alt_converted %f at current_btc %f" % (self.SYMBOL, alt_converted, current_btc))
         print("%s ask %f at bid %f" % (self.SYMBOL, ask, bid))
-        print("%s confirm %f at ticket %f" % (self.SYMBOL, self.confirm, self.ticket))
-        print("%s sell open %f buy open %f" % (self.SYMBOL, self.is_sell_open, self.is_buy_open))
+        print("%s confirm %.0f at ticket %.0f" % (self.SYMBOL, self.confirm, self.ticket))
+        print("%s sell open %.0f buy open %.0f" % (self.SYMBOL, self.is_sell_open, self.is_buy_open))
+        print("%s slow_ma %f mid_ma %f fast_ma %f" % (self.SYMBOL, slow_ma, mid_ma,fast_ma ))
 
 
-        # trade strategy
         if self.is_buy_open:
-            if fast_ma > slow_ma:
-                if current_btc > 0.03 and current_margin > 0.42:
-                    buy_margin(ask, self.SYMBOL)
-                    self.is_buy_open = True
-            if fast_ma < mid_ma and current_btc > 0.02  and current_margin > 0.42:
-                exit_sell_margin(bid, self.SYMBOL)
-                self.is_buy_open = False
-                self.ticket = 0
-            if current_margin < 0.25 :
-                exit_sell_margin(bid, self.SYMBOL)
-                self.is_buy_open = False
-                self.ticket = 0
-                    #self.is_sell_open = True
-                    #self.is_buy_open = False
+            if current_margin > 0.42:
+                if  fast_ma > mid_ma and fast_ma > slow_ma:
+                    if self.ticket < self.confirm:
+                      self.ticket = self.ticket + 1
+                    else:
+                      buy_margin(ask, self.SYMBOL)
+                      self.ticket = 0
+                elif  fast_ma < mid_ma and fast_ma > slow_ma:
+                    exit_buy_margin(ask, self.SYMBOL)
+                    self.ticket = 0
+                elif  fast_ma < slow_ma:
+                    exit_buy_margin(ask, self.SYMBOL)
+                    if self.ticket < self.confirm:
+                      self.ticket = self.ticket + 1
+                    else:
+                      sell_margin(bid, self.SYMBOL)
+                      self.ticket = 0
+            else:
+                if  fast_ma < mid_ma and fast_ma < slow_ma:
+                    exit_buy_margin(ask, self.SYMBOL)
+                    self.ticket = 0
+
         elif self.is_sell_open:
-            if fast_ma < slow_ma:
-                if alt_converted > 0.03 and current_margin > 0.42:
-                    sell_margin(bid, self.SYMBOL)
-                    self.is_sell_open = True
-            if fast_ma > mid_ma and alt_converted > 0.02 and current_margin > 0.42:
-                exit_buy_margin(ask, self.SYMBOL)
-                self.is_sell_open = False
-                self.ticket = 0
-            if current_margin < 0.25 :
-                exit_buy_margin(ask, self.SYMBOL)
-                self.is_sell_open = False
-                self.ticket = 0
+            if current_margin > 0.42:
+                if  fast_ma < mid_ma and fast_ma < slow_ma:
+                    if self.ticket < self.confirm:
+                      self.ticket = self.ticket + 1
+                    else:
+                      sell_margin(bid, self.SYMBOL)
+                      self.ticket = 0
+                elif  fast_ma > mid_ma and fast_ma < slow_ma:
+                    exit_sell_margin(bid, self.SYMBOL)
+                    self.ticket = 0
+                elif  fast_ma > slow_ma:
+                    exit_sell_margin(bid, self.SYMBOL)
+                    if self.ticket < self.confirm:
+                      self.ticket = self.ticket + 1
+                    else:
+                      buy_margin(ask, self.SYMBOL)
+                      self.ticket = 0
+            else:
+                if  fast_ma > mid_ma and fast_ma > slow_ma:
+                    exit_sell_margin(bid, self.SYMBOL)
+                    self.ticket = 0
 
-
-
-        # initate trade
-        if self.initiate == 0 :
-            if self.is_buy_open is False and self.is_sell_open is False:
-                print("%s alt_converted %f, current_btc %f " % (self.SYMBOL, alt_converted, current_btc))
-                if slow_ma > fast_ma:
-                    if alt_converted > 0.025 and current_margin > 0.42:
-                        # first sell
-                        print("%s sell number 1 : alt_converted %f, current_btc %f " % (self.SYMBOL, alt_converted, current_btc))
-                        sell_margin(bid, self.SYMBOL)
-                        self.is_sell_open = True
-                        self.initiate = 1
-                    elif current_btc > 0.025 and alt_converted > 0.025 and current_margin > 0.42:
-                        # first sell
-                        print("%s sell number 2 : alt_converted %f, current_btc %f " % (self.SYMBOL, alt_converted, current_btc))
-                        sell_margin(bid, self.SYMBOL)
-                        self.is_sell_open = True
-                        self.initiate = 1
-                    else :
-                        # first sell
-                        #sell_margin(bid, self.SYMBOL)
-                        self.is_sell_open = True
-                        self.initiate = 1
-                elif slow_ma < fast_ma:
-                    if current_btc > 0.025 and current_margin > 0.42:
-                        # first buy
-                        print("%s buy number 1 : alt_converted %f, current_btc %f " % (self.SYMBOL, alt_converted, current_btc))
-                        buy_margin(ask, self.SYMBOL)
-                        self.is_buy_open = True
-                        self.initiate = 1
-                    elif alt_converted > 0.025 and current_btc > 0.025 and current_margin > 0.42:
-                        # first buy
-                        print("%s buy number 2 : alt_converted %f, current_btc %f " % (self.SYMBOL, alt_converted, current_btc))
-                        buy_margin(ask, self.SYMBOL)
-                        self.is_buy_open = True
-                        self.initiate = 1
-                    else :
-                        # first sell
-                        #sell_margin(bid, self.SYMBOL)
-                        self.is_buy_open = True
-                        self.initiate = 1
 
         elif self.is_sell_open is False and self.is_buy_open is False :
-            if  fast_ma > slow_ma and fast_ma > mid_ma:
-                if self.ticket < self.confirm:
-                    self.ticket = self.ticket + 1
-                else:
-                    buy_margin(ask, self.SYMBOL)
-                    self.ticket = 0
-                    self.is_sell_open = False
-                    self.is_buy_open = True
-            if  fast_ma < slow_ma and fast_ma < mid_ma:
-                if self.ticket < self.confirm:
-                    self.ticket = self.ticket + 1
-                else:
-                    sell_margin(bid, self.SYMBOL)
-                    self.ticket = 0
-                    self.is_sell_open = True
-                    self.is_buy_open = False
+            if current_margin > 0.42:
+                if  fast_ma < mid_ma and fast_ma < slow_ma:
+                    if self.ticket < self.confirm:
+                      self.ticket = self.ticket + 1
+                    else:
+                      sell_margin(bid, self.SYMBOL)
+                      self.ticket = 0
+                if  fast_ma > mid_ma and fast_ma > slow_ma:
+                    if self.ticket < self.confirm:
+                      self.ticket = self.ticket + 1
+                    else:
+                      buy_margin(ask, self.SYMBOL)
+                      self.ticket = 0
+
+
         #    def supertrend_strategy(self, fast_period, slow_period):

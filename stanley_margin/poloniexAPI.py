@@ -85,6 +85,16 @@ def get_btc_balance(symbol):
 
     #return float(bal_sym["btcValue"])
 
+def get_margin_type(symbol):
+    margin = polo.getMarginPosition(currencyPair=symbol)
+    margin_type = margin["type"]
+    print("Margin for %s with position %s" % (symbol, margin_type))
+
+    #print("Margin for %s with total %f" % (symbol, margin_total))
+    #print("I have %s %s symbol!" % ( balance, symbol))
+    return margin_type
+    #return margin
+
 def get_margin_balance(symbol):
     coin =  symbol.replace("BTC_", "")
     balance = polo.returnTradableBalances()
