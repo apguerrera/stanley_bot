@@ -34,7 +34,7 @@ def calc_margin_alt(price, symbol):
     coin_balance = float(current_balance[symbol][coin])
     print("My malt trade balance = %s at price %f" % (coin_balance, price))
 
-    relative_balance = coin_balance*0.5  # 2= 50% of current balance
+    relative_balance = coin_balance*0.3  # 2= 50% of current balance
     #relative_balance = 0.1  # my balance = 0, FIX IT!
     amount = relative_balance
     return amount
@@ -46,7 +46,7 @@ def calc_margin_btc(price, symbol):
 
     print("My mbtc margin balance = %f at price %f" % (current_balance, price))
 
-    relative_balance = current_balance*0.5 # 2= 50% of current balance
+    relative_balance = current_balance*0.3 # 2= 50% of current balance
     #relative_balance = 0.021  # 2= 50% of current balance
 
     #relative_balance = 0.1  # my balance = 0, FIX IT!
@@ -57,18 +57,40 @@ def calc_margin_btc(price, symbol):
 
 def buy_margin(ask, symbol):
     amount = calc_margin_btc(ask, symbol)
-    #SYMBOL = 'BTC_ETH'
-    print("Buy %s amount = %s at price %f" % (symbol, amount, ask))
+    value = float(amount) * ask
 
-    # uncomment to make trades
-    #res = poloniexAPI.polo.buy(symbol, ask, amount, orderType='immediateOrCancel')
-    res = poloniexAPI.polo.marginBuy(symbol, ask, amount, lendingRate=0.02)  # if you want margin trade
-    print("Res %s at price %f" % (res, ask))
+    print("Buy %s amount = %s at price %f, value %f" % (symbol, amount, ask, value))
 
-    #res = 'success'
+    if value > 0.02:
+        res = poloniexAPI.polo.marginBuy(symbol, ask, amount, lendingRate=0.02)  # if you want margin trade
+        print("Res %s at price %f" % (res, ask))
+        ret = 'success'
+    elif value < 0.02:
+        print("Res %s not enough margin: %f" % (symbol, value))
+        ret = 'no_margin'
+
     #if res != 'success':
     #    raise BaseException('### Trade Buy error')
-    return res
+    return ret
+
+
+def sell_margin(bid, symbol):
+    #coin =  symbol.replace("BTC_", "")
+    amount = calc_margin_alt(bid, symbol)
+    value = float(amount) * bid
+    print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
+
+    if value > 0.02:
+        res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
+        print("Res %s at price %f" % (res, bid))
+        ret = 'success'
+    elif value < 0.02:
+        print("Res %s not enough margin: %f" % (symbol, value))
+        ret = 'no_margin'
+     # fix it when uncomment!
+    #if res != 'success':
+    #    raise BaseException('### Trade Sell error')
+    return ret
 
 def exit_buy_margin(ask, symbol):
 
@@ -77,22 +99,6 @@ def exit_buy_margin(ask, symbol):
     res = poloniexAPI.polo.closeMarginPosition(currencyPair=symbol)  # if you want margin trade
     print("Res %s at price %f" % (res, ask))
 
-    return res
-
-def sell_margin(bid, symbol):
-    #coin =  symbol.replace("BTC_", "")
-    amount = calc_margin_alt(bid, symbol)
-    #SYMBOL = 'BTC_ETH'
-    print("Sell %s amount = %s at price %f" % (symbol, amount, bid))
-
-    # uncomment to make trades
-    #res = poloniexAPI.polo.sell(symbol, bid, amount, orderType='immediateOrCancel')
-    res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
-    print("Res %s at price %f" % (res, bid))
-
-    #res = 'success'  # fix it when uncomment!
-    #if res != 'success':
-    #    raise BaseException('### Trade Sell error')
     return res
 
 def exit_sell_margin(bid, symbol):
@@ -148,7 +154,7 @@ class Strategy:
     def __init__(self, symbol):
         self.SYMBOL = symbol
         self.ticket = 0
-        self.confirm = 1
+        self.confirm = 2
         self.initiate = 0
     def crossover_strategy(self, time_period, fast_period, mid_period, slow_period):
 
@@ -192,20 +198,20 @@ class Strategy:
             if current_margin > 0.42:
                 if  fast_ma > mid_ma and fast_ma > slow_ma:
                     if self.ticket < self.confirm:
-                      self.ticket = self.ticket + 1
+                        self.ticket = self.ticket + 1
                     else:
-                      buy_margin(ask, self.SYMBOL)
-                      self.ticket = 0
+                        if buy_margin(ask, self.SYMBOL) == "success":
+                            self.ticket = 0
                 elif  fast_ma < mid_ma and fast_ma > slow_ma:
                     exit_buy_margin(ask, self.SYMBOL)
                     self.ticket = 0
                 elif  fast_ma < slow_ma:
                     exit_buy_margin(ask, self.SYMBOL)
                     if self.ticket < self.confirm:
-                      self.ticket = self.ticket + 1
+                        self.ticket = self.ticket + 1
                     else:
-                      sell_margin(bid, self.SYMBOL)
-                      self.ticket = 0
+                        if sell_margin(bid, self.SYMBOL) == "success":
+                            self.ticket = 0
             else:
                 if  fast_ma < mid_ma and fast_ma < slow_ma:
                     exit_buy_margin(ask, self.SYMBOL)
@@ -215,20 +221,20 @@ class Strategy:
             if current_margin > 0.42:
                 if  fast_ma < mid_ma and fast_ma < slow_ma:
                     if self.ticket < self.confirm:
-                      self.ticket = self.ticket + 1
+                        self.ticket = self.ticket + 1
                     else:
-                      sell_margin(bid, self.SYMBOL)
-                      self.ticket = 0
+                        if sell_margin(bid, self.SYMBOL) == "success":
+                            self.ticket = 0
                 elif  fast_ma > mid_ma and fast_ma < slow_ma:
                     exit_sell_margin(bid, self.SYMBOL)
                     self.ticket = 0
                 elif  fast_ma > slow_ma:
                     exit_sell_margin(bid, self.SYMBOL)
                     if self.ticket < self.confirm:
-                      self.ticket = self.ticket + 1
+                        self.ticket = self.ticket + 1
                     else:
-                      buy_margin(ask, self.SYMBOL)
-                      self.ticket = 0
+                        if buy_margin(ask, self.SYMBOL) == "success":
+                            self.ticket = 0
             else:
                 if  fast_ma > mid_ma and fast_ma > slow_ma:
                     exit_sell_margin(bid, self.SYMBOL)
@@ -239,16 +245,16 @@ class Strategy:
             if current_margin > 0.42:
                 if  fast_ma < mid_ma and fast_ma < slow_ma:
                     if self.ticket < self.confirm:
-                      self.ticket = self.ticket + 1
+                        self.ticket = self.ticket + 1
                     else:
-                      sell_margin(bid, self.SYMBOL)
-                      self.ticket = 0
+                        if sell_margin(bid, self.SYMBOL) == "success":
+                            self.ticket = 0
                 if  fast_ma > mid_ma and fast_ma > slow_ma:
                     if self.ticket < self.confirm:
-                      self.ticket = self.ticket + 1
+                        self.ticket = self.ticket + 1
                     else:
-                      buy_margin(ask, self.SYMBOL)
-                      self.ticket = 0
+                        if buy_margin(ask, self.SYMBOL) == "success":
+                            self.ticket = 0
 
 
         #    def supertrend_strategy(self, fast_period, slow_period):
