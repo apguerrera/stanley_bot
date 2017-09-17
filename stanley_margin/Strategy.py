@@ -209,9 +209,6 @@ class Strategy:
                     exit_buy_margin(ask, self.SYMBOL)
                     if self.ticket < self.confirm:
                         self.ticket = self.ticket + 1
-                    else:
-                        if sell_margin(bid, self.SYMBOL) == "success":
-                            self.ticket = 0
             else:
                 if  fast_ma < mid_ma and fast_ma < slow_ma:
                     exit_buy_margin(ask, self.SYMBOL)
@@ -232,9 +229,6 @@ class Strategy:
                     exit_sell_margin(bid, self.SYMBOL)
                     if self.ticket < self.confirm:
                         self.ticket = self.ticket + 1
-                    else:
-                        if buy_margin(ask, self.SYMBOL) == "success":
-                            self.ticket = 0
             else:
                 if  fast_ma > mid_ma and fast_ma > slow_ma:
                     exit_sell_margin(bid, self.SYMBOL)
@@ -245,13 +239,13 @@ class Strategy:
             if current_margin > 0.42:
                 if  fast_ma < mid_ma and fast_ma < slow_ma:
                     if self.ticket < self.confirm:
-                        self.ticket = self.ticket + 1
+                        self.ticket = self.ticket + 2
                     else:
                         if sell_margin(bid, self.SYMBOL) == "success":
                             self.ticket = 0
                 if  fast_ma > mid_ma and fast_ma > slow_ma:
                     if self.ticket < self.confirm:
-                        self.ticket = self.ticket + 1
+                        self.ticket = self.ticket + 2
                     else:
                         if buy_margin(ask, self.SYMBOL) == "success":
                             self.ticket = 0
