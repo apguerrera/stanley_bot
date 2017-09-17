@@ -1,12 +1,13 @@
 import poloniexAPI
 import time
 from Strategy import Strategy
+import datetime
 
 # region ### GLOBALS
 PERIOD_MA_SLOW = 120
-PERIOD_MA_MID = 60
+PERIOD_MA_MID = 40
 PERIOD_MA_FAST = 20
-PERIOD_MA_TIME = 5
+PERIOD_MA_TIME = 15
 SYMBOL = 'BTC_ETH'
 # endregion
 
@@ -63,16 +64,31 @@ if __name__ == "__main__":
 
     while True:
 
+        current_time = datetime.datetime.now()
+        print("Date Time:%s  " % (current_time))
 
         # one or more strategies below
         strategy_ltc.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        time.sleep(5)
         strategy_str.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        time.sleep(5)
         strategy_eth.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        time.sleep(5)
         strategy_xrp.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        time.sleep(5)
         strategy_dash.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        time.sleep(5)
         strategy_bts.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        time.sleep(5)
         strategy_fct.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        time.sleep(5)
         strategy_xmr.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        time.sleep(5)
+        strategy_maid.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        time.sleep(5)
+        strategy_doge.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        time.sleep(5)
+        strategy_clam.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
 
         #test_info(SYMBOL)
         #test_info('BTC_ETH')
