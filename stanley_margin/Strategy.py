@@ -1,30 +1,6 @@
 import poloniexAPI
 import time
 
-PERIOD_MA_SLOW = 120
-PERIOD_MA_FAST = 20
-
-# region ### Methods
-def calc_amount_alt(price, coin):
-    current_balance = poloniexAPI.get_balance(coin)  # make it more flexible...
-    print("My alt trade balance = %s at price %f" % (current_balance, price))
-
-    relative_balance = current_balance / 8  # 50% of current balance
-    #relative_balance = 0.1  # my balance = 0, FIX IT!
-    amount = relative_balance
-    return amount
-
-# region ### Methods
-def calc_amount_btc(price):
-    current_balance = poloniexAPI.get_balance('BTC_XRP')  # make it more flexible...
-    print("My btc trade balance = %s at price %f" % (current_balance, price))
-
-    relative_balance = current_balance / 8  # 50% of current balance
-    #relative_balance = 0.1  # my balance = 0, FIX IT!
-    amount = relative_balance / price
-    return amount
-
-
 # region ### Methods
 def calc_margin_alt(price, symbol):
     current_balance = poloniexAPI.polo.returnTradableBalances()  # make it more flexible...
@@ -34,7 +10,7 @@ def calc_margin_alt(price, symbol):
     coin_balance = float(current_balance[symbol][coin])
     print("My malt trade balance = %s at price %f" % (coin_balance, price))
 
-    relative_balance = coin_balance*0.3  # 2= 50% of current balance
+    relative_balance = coin_balance*0.5  # 2= 50% of current balance
     #relative_balance = 0.1  # my balance = 0, FIX IT!
     amount = relative_balance
     return amount
@@ -45,10 +21,8 @@ def calc_margin_btc(price, symbol):
     current_balance = poloniexAPI.get_btc_balance(symbol)  # make it more flexible...
 
     print("My mbtc margin balance = %f at price %f" % (current_balance, price))
-
-    relative_balance = current_balance*0.3 # 2= 50% of current balance
+    relative_balance = current_balance*0.5 # 2= 50% of current balance
     #relative_balance = 0.021  # 2= 50% of current balance
-
     #relative_balance = 0.1  # my balance = 0, FIX IT!
     amount = relative_balance / price
     return amount
@@ -93,54 +67,16 @@ def sell_margin(bid, symbol):
     return ret
 
 def exit_buy_margin(ask, symbol):
-
-    #coin =  symbol.replace("BTC_", "")
-    #SYMBOL = 'BTC_ETH'
     res = poloniexAPI.polo.closeMarginPosition(currencyPair=symbol)  # if you want margin trade
     print("Res %s at price %f" % (res, ask))
 
     return res
 
 def exit_sell_margin(bid, symbol):
-    #coin =  symbol.replace("BTC_", "")
-    #SYMBOL = 'BTC_ETH'
     res = poloniexAPI.polo.closeMarginPosition(currencyPair=symbol)  # if you want margin trade
     print("Res %s at price %f" % (res, bid))
 
     return res
-
-def buy(ask, symbol):
-    amount = calc_amount_btc(ask)
-    #SYMBOL = 'BTC_ETH'
-    print("Buy %s amount = %s at price %f" % (symbol, amount, ask))
-
-    # uncomment to make trades
-    res = poloniexAPI.polo.buy(symbol, ask, amount, orderType='immediateOrCancel')
-    # res = poloniexAPI.polo.marginBuy(symbol, ask, amount, lendingRate=2.4)  # if you want margin trade
-    print("Res %s at price %f" % (res, ask))
-
-    #res = 'success'
-    #if res != 'success':
-    #    raise BaseException('### Trade Buy error')
-    return res
-
-
-def sell(bid, symbol):
-    coin =  symbol.replace("BTC_", "")
-    amount = calc_amount_alt(bid, coin)
-    #SYMBOL = 'BTC_ETH'
-    print("Sell %s amount = %s at price %f" % (symbol, amount, bid))
-
-    # uncomment to make trades
-    res = poloniexAPI.polo.sell(symbol, bid, amount, orderType='immediateOrCancel')
-    #res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=2.4)  # if you want margin trade
-    print("Res %s at price %f" % (res, bid))
-
-    #res = 'success'  # fix it when uncomment!
-    #if res != 'success':
-    #    raise BaseException('### Trade Sell error')
-    return res
-# endregion
 
 
 class Strategy:
@@ -210,7 +146,7 @@ class Strategy:
                     if self.ticket < self.confirm:
                         self.ticket = self.ticket + 1
             else:
-                if  fast_ma < mid_ma and fast_ma < slow_ma:
+                if  fast_ma < mid_ma:
                     exit_buy_margin(ask, self.SYMBOL)
                     self.ticket = 0
 
@@ -230,7 +166,7 @@ class Strategy:
                     if self.ticket < self.confirm:
                         self.ticket = self.ticket + 1
             else:
-                if  fast_ma > mid_ma and fast_ma > slow_ma:
+                if  fast_ma > mid_ma:
                     exit_sell_margin(bid, self.SYMBOL)
                     self.ticket = 0
 
