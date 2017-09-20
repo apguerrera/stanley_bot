@@ -4,7 +4,7 @@ from Strategy import Strategy
 import datetime
 
 # region ### GLOBALS
-PERIOD_MA_SLOW = 140
+PERIOD_MA_SLOW = 120
 PERIOD_MA_MID = 40
 PERIOD_MA_FAST = 20
 PERIOD_MA_TIME = 15
@@ -83,13 +83,13 @@ if __name__ == "__main__":
         strategy_fct.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
         time.sleep(5)
         strategy_xmr.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
-
         time.sleep(5)
         strategy_maid.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
         time.sleep(5)
         #strategy_doge.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
         time.sleep(5)
         strategy_clam.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+
 
         #test_info(SYMBOL)
         #test_info('BTC_ETH')
