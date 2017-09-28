@@ -4,8 +4,8 @@ from Strategy import Strategy
 import datetime
 
 # region ### GLOBALS
-PERIOD_MA_SLOW = 120
-PERIOD_MA_MID = 40
+PERIOD_MA_SLOW = 140
+PERIOD_MA_MID = 50
 PERIOD_MA_FAST = 20
 PERIOD_MA_TIME = 120
 SYMBOL = 'BTC_ETH'
@@ -69,25 +69,25 @@ if __name__ == "__main__":
 
         # one or more strategies below
         strategy_ltc.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
-        time.sleep(5)
+        time.sleep(0.2)
         strategy_str.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
-        time.sleep(5)
+        time.sleep(0.2)
         strategy_eth.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
-        time.sleep(5)
+        time.sleep(0.2)
         strategy_xrp.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
-        time.sleep(5)
+        time.sleep(0.2)
         strategy_dash.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
-        time.sleep(5)
+        time.sleep(0.2)
         strategy_bts.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
-        time.sleep(5)
+        time.sleep(0.2)
         strategy_fct.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
-        time.sleep(5)
+        time.sleep(0.2)
         strategy_xmr.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
-        time.sleep(5)
+        time.sleep(0.2)
         strategy_maid.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
-        time.sleep(5)
+        time.sleep(0.2)
         #strategy_doge.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
-        time.sleep(5)
+        time.sleep(0.2)
         strategy_clam.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
 
 
