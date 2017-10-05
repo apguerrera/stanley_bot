@@ -8,7 +8,7 @@ def calc_margin_alt(price, symbol):
     current_balance = poloniexAPI.polo.returnTradableBalances()  # make it more flexible...
     coin =  symbol.replace("BTC_", "")
     coin_balance = float(current_balance[symbol][coin])
-    relative_balance = coin_balance*0.35  # 95% of current balance for buffer
+    relative_balance = coin_balance*0.95  # 95% of current balance for buffer
     print("My malt margin balance = %s at price %f" % (relative_balance, price))
 
     amount = relative_balance
@@ -19,7 +19,7 @@ def calc_margin_alt(price, symbol):
 def calc_margin_btc(price, symbol):
     balance = poloniexAPI.polo.returnTradableBalances()
     coin_balance = float(balance[symbol]["BTC"])
-    relative_balance = coin_balance*0.35  # 2= 50% of current balance
+    relative_balance = coin_balance*0.95  # 2= 50% of current balance
     print("My mbtc margin balance = %f at price %f" % (relative_balance, price))
 
     amount = relative_balance / price
@@ -30,7 +30,7 @@ def calc_margin_btc(price, symbol):
 def buy_margin(ask, symbol):
     amount = calc_margin_btc(ask, symbol)
     value = float(amount) * ask
-    factor = 0.20  # percentage of total margin avaliable to use on this trade
+    factor = 0.10  # percentage of total margin avaliable to use on this trade
     print("Buy %s amount = %s at price %f, value %f" % (symbol, amount, ask, value))
 
     if value > 0.02:  # enough margin to place a trade
@@ -39,13 +39,23 @@ def buy_margin(ask, symbol):
             res = poloniexAPI.polo.marginBuy(symbol, ask, amount, lendingRate=0.02)  # if you want margin trade
             print("Res %s at price %f" % (res, ask))
             ret = 'success'
-        else:  # trade with remaining margin available > 0.02 btc
+        elif value * factor * 3 > 0.02:  # trade with remaining margin available > 0.02 btc
+            amount = amount * factor * 3
             res = poloniexAPI.polo.marginBuy(symbol, ask, amount, lendingRate=0.02)  # if you want margin trade
             print("Res %s at price %f" % (res, ask))
             ret = 'success'
+        elif value * factor * 6 > 0.02:  # trade with remaining margin available > 0.02 btc
+            amount = amount * factor * 6
+            res = poloniexAPI.polo.marginBuy(symbol, ask, amount, lendingRate=0.02)  # if you want margin trade
+            print("Res %s at price %f" % (res, ask))
+            ret = 'success'
+        else:
+            print("Res %s not enough margin: %f" % (symbol, value))
+            ret = 'no_margin'
     elif value < 0.02:
         print("Res %s not enough margin: %f" % (symbol, value))
         ret = 'no_margin'
+    print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
 
     #if res != 'success':
     #    raise BaseException('### Trade Buy error')
@@ -56,7 +66,7 @@ def sell_margin(bid, symbol):
 
     amount = calc_margin_alt(bid, symbol)
     value = float(amount) * bid
-    factor = 0.2
+    factor = 0.1
     print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
 
     if value > 0.02:
@@ -65,13 +75,24 @@ def sell_margin(bid, symbol):
             res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
             print("Res %s at price %f" % (res, bid))
             ret = 'success'
-        else:
+        elif value * factor * 3 > 0.02:
+            amount = amount * factor * 3
             res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
             print("Res %s at price %f" % (res, bid))
             ret = 'success'
+        elif value * factor * 6 > 0.02:
+            amount = amount * factor * 6
+            res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
+            print("Res %s at price %f" % (res, bid))
+            ret = 'success'
+        else:
+            print("Res %s not enough margin: %f" % (symbol, value))
+            ret = 'no_margin'
     elif value < 0.02:
         print("Res %s not enough margin: %f" % (symbol, value))
         ret = 'no_margin'
+    print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
+
      # fix it when uncomment!
     #if res != 'success':
     #    raise BaseException('### Trade Sell error')
@@ -142,7 +163,8 @@ class Strategy:
 
 
             if self.is_buy_open:
-                if current_margin > 0.60:
+                print("%s is_buy_open" % (self.SYMBOL ))
+                if current_margin > 0.50:
                     if  fast_ma > slow_ma:
                         if fast_ma > mid_ma:
                             if self.ticket < self.confirm:
@@ -166,7 +188,8 @@ class Strategy:
                         self.ticket = 0
 
             elif self.is_sell_open:
-                if current_margin > 0.60:
+                print("%s is_sell_open" % (self.SYMBOL ))
+                if current_margin > 0.50:
                     if  fast_ma < slow_ma:
                         if fast_ma < mid_ma:
                             if self.ticket < self.confirm:
@@ -195,15 +218,18 @@ class Strategy:
 
             elif self.is_sell_open is False and self.is_buy_open is False :
                 self.confirm = 4
+                print("%s is_closed" % (self.SYMBOL ))
                 if current_margin > 0.42:
                     if  fast_ma < slow_ma and fast_ma < mid_ma: # and slow_ma <= mid_ma:
+                        print("%s is_sell_open new entry" % (self.SYMBOL ))
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
                         else:
                             if sell_margin(bid, self.SYMBOL) == "success":
                                 self.ticket = 0
                                 self.confirm = 1000000
-                    if  fast_ma > slow_ma and fast_ma > mid_ma: # and slow_ma >= mid_ma:
+                    elif  fast_ma > slow_ma and fast_ma > mid_ma: # and slow_ma >= mid_ma:
+                        print("%s is_buy_open new entry" % (self.SYMBOL ))
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
                         else:

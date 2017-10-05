@@ -5,8 +5,8 @@ import datetime
 
 # region ### GLOBALS
 PERIOD_MA_SLOW = 140
-PERIOD_MA_MID = 50
-PERIOD_MA_FAST = 20
+PERIOD_MA_MID = 30
+PERIOD_MA_FAST = 10
 PERIOD_MA_TIME = 120
 SYMBOL = 'BTC_ETH'
 # endregion
