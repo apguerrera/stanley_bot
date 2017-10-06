@@ -1,10 +1,12 @@
 pragma solidity ^0.4.11;
 
-contract myToken {
+contract myToken is MintableToken {
     mapping(address => uint256) balances;
     uint256 public totalSupply;
-    string public name = "MyToken";
+    string public constant name = "Adriano";
     uint8 public decimals = 18;
+    string public constant symbol = 'ADR';
+    bool public transferAllowed;
 
     function MyToken() {
         balances[msg.sender] = 10;

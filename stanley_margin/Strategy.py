@@ -25,6 +25,23 @@ def calc_margin_btc(price, symbol):
     amount = relative_balance / price
     return amount
 
+def buy_margin(ask, symbol, amount):
+    value = float(amount) * ask
+    print("Buy %s amount = %s at price %f, value %f" % (symbol, amount, ask, value))
+
+    if value > 0.02:  # enough margin to place a trade
+        amount = amount * factor
+        res = poloniexAPI.polo.marginBuy(symbol, ask, amount, lendingRate=0.02)  # if you want margin trade
+        print("Res %s at price %f" % (res, ask))
+        ret = 'success'
+
+    elif value < 0.02:
+        print("Res %s not enough margin: %f" % (symbol, value))
+        ret = 'no_margin'
+
+    #if res != 'success':
+    #    raise BaseException('### Trade Buy error')
+    return ret
 
 
 def buy_margin(ask, symbol):
@@ -61,6 +78,25 @@ def buy_margin(ask, symbol):
     #    raise BaseException('### Trade Buy error')
     return ret
 
+
+def sell_margin_amount(bid, symbol, amount):
+
+    #amount = calc_margin_alt(bid, symbol)
+    value = float(amount) * bid
+    #factor = 0.2
+    print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
+
+    if value > 0.02:
+        res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
+        print("Res %s at price %f" % (res, bid))
+        ret = 'success'
+    elif value < 0.02:
+        print("Res %s not enough margin: %f" % (symbol, value))
+        ret = 'no_margin'
+     # fix it when uncomment!
+    #if res != 'success':
+    #    raise BaseException('### Trade Sell error')
+    return ret
 
 def sell_margin(bid, symbol):
 
@@ -163,7 +199,10 @@ class Strategy:
 
 
             if self.is_buy_open:
+<<<<<<< Updated upstream
                 print("%s is_buy_open" % (self.SYMBOL ))
+=======
+>>>>>>> Stashed changes
                 if current_margin > 0.50:
                     if  fast_ma > slow_ma:
                         if fast_ma > mid_ma:
@@ -188,7 +227,10 @@ class Strategy:
                         self.ticket = 0
 
             elif self.is_sell_open:
+<<<<<<< Updated upstream
                 print("%s is_sell_open" % (self.SYMBOL ))
+=======
+>>>>>>> Stashed changes
                 if current_margin > 0.50:
                     if  fast_ma < slow_ma:
                         if fast_ma < mid_ma:
@@ -220,16 +262,24 @@ class Strategy:
                 self.confirm = 4
                 print("%s is_closed" % (self.SYMBOL ))
                 if current_margin > 0.42:
+<<<<<<< Updated upstream
                     if  fast_ma < slow_ma and fast_ma < mid_ma: # and slow_ma <= mid_ma:
                         print("%s is_sell_open new entry" % (self.SYMBOL ))
+=======
+                    if  fast_ma < mid_ma and fast_ma < slow_ma:
+>>>>>>> Stashed changes
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
                         else:
                             if sell_margin(bid, self.SYMBOL) == "success":
                                 self.ticket = 0
+<<<<<<< Updated upstream
                                 self.confirm = 1000000
                     elif  fast_ma > slow_ma and fast_ma > mid_ma: # and slow_ma >= mid_ma:
                         print("%s is_buy_open new entry" % (self.SYMBOL ))
+=======
+                    if  fast_ma > mid_ma and fast_ma > slow_ma:
+>>>>>>> Stashed changes
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
                         else:
