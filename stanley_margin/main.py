@@ -4,13 +4,10 @@ from Strategy import Strategy
 import datetime
 
 # region ### GLOBALS
-<<<<<<< Updated upstream
-PERIOD_MA_SLOW = 140
-=======
-PERIOD_MA_SLOW = 120
->>>>>>> Stashed changes
+
+PERIOD_MA_SLOW = 80
 PERIOD_MA_MID = 30
-PERIOD_MA_FAST = 10
+PERIOD_MA_FAST = 8
 PERIOD_MA_TIME = 120
 SYMBOL = 'BTC_ETH'
 # endregion

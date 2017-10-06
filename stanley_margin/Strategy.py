@@ -199,10 +199,7 @@ class Strategy:
 
 
             if self.is_buy_open:
-<<<<<<< Updated upstream
                 print("%s is_buy_open" % (self.SYMBOL ))
-=======
->>>>>>> Stashed changes
                 if current_margin > 0.50:
                     if  fast_ma > slow_ma:
                         if fast_ma > mid_ma:
@@ -227,10 +224,7 @@ class Strategy:
                         self.ticket = 0
 
             elif self.is_sell_open:
-<<<<<<< Updated upstream
                 print("%s is_sell_open" % (self.SYMBOL ))
-=======
->>>>>>> Stashed changes
                 if current_margin > 0.50:
                     if  fast_ma < slow_ma:
                         if fast_ma < mid_ma:
@@ -238,7 +232,7 @@ class Strategy:
                                 self.ticket = self.ticket + 1
                             else:
                                 if sell_margin(bid, self.SYMBOL) == "success":
-                                    self.ticket = 0
+                                    self.ticket = =]
                         else:
                             self.ticket = 0
                     elif  fast_ma > mid_ma:
@@ -262,24 +256,18 @@ class Strategy:
                 self.confirm = 4
                 print("%s is_closed" % (self.SYMBOL ))
                 if current_margin > 0.42:
-<<<<<<< Updated upstream
                     if  fast_ma < slow_ma and fast_ma < mid_ma: # and slow_ma <= mid_ma:
                         print("%s is_sell_open new entry" % (self.SYMBOL ))
-=======
-                    if  fast_ma < mid_ma and fast_ma < slow_ma:
->>>>>>> Stashed changes
+
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
                         else:
                             if sell_margin(bid, self.SYMBOL) == "success":
                                 self.ticket = 0
-<<<<<<< Updated upstream
                                 self.confirm = 1000000
                     elif  fast_ma > slow_ma and fast_ma > mid_ma: # and slow_ma >= mid_ma:
                         print("%s is_buy_open new entry" % (self.SYMBOL ))
-=======
-                    if  fast_ma > mid_ma and fast_ma > slow_ma:
->>>>>>> Stashed changes
+
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
                         else:
