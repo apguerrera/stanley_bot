@@ -16,7 +16,7 @@ def get_orderbook(symbol='BTC_ETH'):
     r = requests.get('https://poloniex.com/public?command=returnOrderBook&currencyPair=' + symbol + '&depth=1')
     return r.json()
 
-
+ 
 def get_chart_data(symbol='BTC_ETH', timeframe=5, period=120):
     """
     Get OHLC data of selected symbol

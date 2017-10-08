@@ -62,7 +62,7 @@ if __name__ == "__main__":
     print("Current Total Balance:%f  " % (current_btc))
     print("MA Period:%f  MA Slow:%f  MA Mid:%f  MA Fast:%f  " % (PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST))
 
-
+ 
     while True:
 
         current_time = datetime.datetime.now()

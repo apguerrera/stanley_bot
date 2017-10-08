@@ -236,11 +236,8 @@ class Strategy:
                         else:
                             self.ticket = 0
                     elif  fast_ma > mid_ma:
-                        try:
-                            exit_sell_margin(bid, self.SYMBOL)
-                            self.ticket = 0
-                        except:
-                            self.ticket = 0
+                        exit_sell_margin(bid, self.SYMBOL)
+                        self.ticket = 0
                     elif  fast_ma > slow_ma:
                         exit_sell_margin(bid, self.SYMBOL)
                         self.ticket = 0
@@ -264,7 +261,7 @@ class Strategy:
                         else:
                             if sell_margin(bid, self.SYMBOL) == "success":
                                 self.ticket = 0
-                                self.confirm = 1000000
+                                self.confirm = 20
                     elif  fast_ma > slow_ma and fast_ma > mid_ma: # and slow_ma >= mid_ma:
                         print("%s is_buy_open new entry" % (self.SYMBOL ))
 
@@ -273,7 +270,7 @@ class Strategy:
                         else:
                             if buy_margin(ask, self.SYMBOL) == "success":
                                 self.ticket = 0
-                                self.confirm = 1000000
+                                self.confirm = 20
                     else:
                         self.ticket = 0
 
