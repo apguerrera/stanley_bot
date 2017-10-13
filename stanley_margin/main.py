@@ -2,14 +2,14 @@ import poloniexAPI
 import time
 from Strategy import Strategy
 import datetime
+import argparse
 
 # region ### GLOBALS
 
-PERIOD_MA_SLOW = 80
-PERIOD_MA_MID = 30
-PERIOD_MA_FAST = 8
-PERIOD_MA_TIME = 120
-SYMBOL = 'BTC_ETH'
+MA_SLOW = 80
+MA_MID = 30
+MA_FAST = 8
+MA_TIME = 120
 # endregion
 
 
@@ -31,6 +31,18 @@ def test_info(symbol):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--fast',  default=MA_FAST, type=int)
+    parser.add_argument('--mid',  default=MA_MID, type=int)
+    parser.add_argument('--slow',  default=MA_SLOW, type=int)
+    parser.add_argument('--time',  default=MA_TIME, type=int)
+    args = parser.parse_args()
+
+    PERIOD_MA_SLOW = args.slow
+    PERIOD_MA_MID = args.mid
+    PERIOD_MA_FAST = args.fast
+    PERIOD_MA_TIME = args.time
+
     strategy_ltc = Strategy('BTC_LTC')
     strategy_str = Strategy('BTC_STR')
     strategy_xrp = Strategy('BTC_XRP')
@@ -62,7 +74,7 @@ if __name__ == "__main__":
     print("Current Total Balance:%f  " % (current_btc))
     print("MA Period:%f  MA Slow:%f  MA Mid:%f  MA Fast:%f  " % (PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST))
 
- 
+
     while True:
 
         current_time = datetime.datetime.now()
