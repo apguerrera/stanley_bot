@@ -232,7 +232,7 @@ class Strategy:
                                 self.ticket = self.ticket + 1
                             else:
                                 if sell_margin(bid, self.SYMBOL) == "success":
-                                    self.ticket = =]
+                                    self.ticket = 0
                         else:
                             self.ticket = 0
                     elif  fast_ma > mid_ma:
