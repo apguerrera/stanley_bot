@@ -208,9 +208,7 @@ class Strategy:
                             else:
                                 if buy_margin(ask, self.SYMBOL) == "success":
                                     self.ticket = 0
-                                    print("%s error 1" % (self.SYMBOL ))
                         else:
-                            print("%s error 2" % (self.SYMBOL ))
                             self.ticket = 0
                     elif  fast_ma < mid_ma:
                         exit_buy_margin(ask, self.SYMBOL)
@@ -235,11 +233,9 @@ class Strategy:
                             else:
                                 if sell_margin(bid, self.SYMBOL) == "success":
                                     self.ticket = 0
-                                    print("%s error 3" % (self.SYMBOL ))
 
                         else:
                             self.ticket = 0
-                            print("%s error 4" % (self.SYMBOL ))
                     elif  fast_ma > mid_ma:
                         exit_sell_margin(bid, self.SYMBOL)
                         self.ticket = 0
@@ -282,5 +278,5 @@ class Strategy:
         except:
             self.ticket = 0
             print("%s error 0" % (self.SYMBOL ))
-
+            raise
         #    def supertrend_strategy(self, fast_period, slow_period):
