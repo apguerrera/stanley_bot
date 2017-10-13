@@ -25,9 +25,9 @@ def calc_margin_btc(price, symbol):
     amount = relative_balance / price
     return amount
 
-def buy_margin(ask, symbol, amount):
+def buy_margin_amount(ask, symbol, amount):
     value = float(amount) * ask
-    print("Buy %s amount = %s at price %f, value %f" % (symbol, amount, ask, value))
+    print("Buy %s Amount = %s at price %f, value %f" % (symbol, amount, ask, value))
 
     if value > 0.02:  # enough margin to place a trade
         amount = amount * factor
@@ -84,7 +84,7 @@ def sell_margin_amount(bid, symbol, amount):
     #amount = calc_margin_alt(bid, symbol)
     value = float(amount) * bid
     #factor = 0.2
-    print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
+    print("Sell %s Amount = %s at price %f, value %f" % (symbol, amount, bid, value))
 
     if value > 0.02:
         res = poloniexAPI.polo.marginSell(currencyPair=symbol, rate=bid, amount=amount, lendingRate=0.02)  # if you want margin trade
