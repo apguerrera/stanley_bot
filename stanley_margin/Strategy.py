@@ -72,7 +72,7 @@ def buy_margin(ask, symbol):
     elif value < 0.02:
         print("Res %s not enough margin: %f" % (symbol, value))
         ret = 'no_margin'
-    print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
+    print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, ask, value))
 
     #if res != 'success':
     #    raise BaseException('### Trade Buy error')
