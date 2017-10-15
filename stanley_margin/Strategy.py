@@ -44,6 +44,26 @@ def buy_margin_amount(ask, symbol, amount):
     return ret
 
 
+def sell_margin_amount(bid, symbol, amount):
+
+    #amount = calc_margin_alt(bid, symbol)
+    value = float(amount) * bid
+    #factor = 0.2
+    print("Sell %s Amount = %s at price %f, value %f" % (symbol, amount, bid, value))
+
+    if value > 0.02:
+        res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
+        print("Res %s at price %f" % (res, bid))
+        ret = 'success'
+    elif value < 0.02:
+        print("Res %s not enough margin: %f" % (symbol, value))
+        ret = 'no_margin'
+     # fix it when uncomment!
+    #if res != 'success':
+    #    raise BaseException('### Trade Sell error')
+    return ret
+
+
 def buy_margin(ask, symbol):
     amount = calc_margin_btc(ask, symbol)
     value = float(amount) * ask
@@ -79,52 +99,26 @@ def buy_margin(ask, symbol):
     return ret
 
 
-def sell_margin_amount(bid, symbol, amount):
-
-    #amount = calc_margin_alt(bid, symbol)
-    value = float(amount) * bid
-    #factor = 0.2
-    print("Sell %s Amount = %s at price %f, value %f" % (symbol, amount, bid, value))
-
-    if value > 0.02:
-        res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
-        print("Res %s at price %f" % (res, bid))
-        ret = 'success'
-    elif value < 0.02:
-        print("Res %s not enough margin: %f" % (symbol, value))
-        ret = 'no_margin'
-     # fix it when uncomment!
-    #if res != 'success':
-    #    raise BaseException('### Trade Sell error')
-    return ret
-
 def sell_margin(bid, symbol):
-
-    amount = calc_margin_alt(bid, symbol)
+    amount = calc_margin_btc(bid, symbol)
     value = float(amount) * bid
-    factor = 0.1
+    factor = 0.10  # percentage of total margin avaliable to use on this trade
     print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
 
-    if value > 0.02:
-        if value * factor > 0.02:
+    if value > 0.02:  # enough margin to place a trade
+        if value * factor > 0.02:  # trade a fraction of available funds
             amount = amount * factor
-            print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
-
-            res = poloniexAPI.polo.marginSell(symbol, rate=bid, amount=amount, lendingRate=0.02)  # if you want margin trade
+            res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
             print("Res %s at price %f" % (res, bid))
             ret = 'success'
-        elif value * factor * 3 > 0.02:
+        elif value * factor * 3 > 0.02:  # trade with remaining margin available > 0.02 btc
             amount = amount * factor * 3
-            print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
-
-            res = poloniexAPI.polo.marginSell(symbol, rate=bid, amount=amount, lendingRate=0.02)  # if you want margin trade
+            res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
             print("Res %s at price %f" % (res, bid))
             ret = 'success'
-        elif value * factor * 6 > 0.02:
+        elif value * factor * 6 > 0.02:  # trade with remaining margin available > 0.02 btc
             amount = amount * factor * 6
-            print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
-
-            res = poloniexAPI.polo.marginSell(symbol, rate=bid, amount=amount, lendingRate=0.02)  # if you want margin trade
+            res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
             print("Res %s at price %f" % (res, bid))
             ret = 'success'
         else:
@@ -133,11 +127,12 @@ def sell_margin(bid, symbol):
     elif value < 0.02:
         print("Res %s not enough margin: %f" % (symbol, value))
         ret = 'no_margin'
+    print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
 
-     # fix it when uncomment!
     #if res != 'success':
     #    raise BaseException('### Trade Sell error')
     return ret
+
 
 def exit_buy_margin(ask, symbol):
     res = poloniexAPI.polo.closeMarginPosition(currencyPair=symbol)  # close margin trade
