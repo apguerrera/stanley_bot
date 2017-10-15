@@ -16,7 +16,7 @@ def get_orderbook(symbol='BTC_ETH'):
     r = requests.get('https://poloniex.com/public?command=returnOrderBook&currencyPair=' + symbol + '&depth=1')
     return r.json()
 
- 
+
 def get_chart_data(symbol='BTC_ETH', timeframe=5, period=120):
     """
     Get OHLC data of selected symbol
@@ -58,6 +58,13 @@ def get_ma(symbol, timeframe, period, source='close'):
 
     return s / period
 
+
+
+def sell_margin_api(symbol, bid, amount):
+
+    res = polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
+
+    return res
 
 def get_balance(symbol):
     my_dict = defaultdict(int)
@@ -108,8 +115,6 @@ def get_margin_balance(symbol):
 def get_current_margin():
 
     balance = polo.returnMarginAccountSummary()
-
-
     print("My current margin = %s" % (balance["currentMargin"]))
     #print("I have %s %s symbol!" % ( balance, symbol))
     return float(balance["currentMargin"])
