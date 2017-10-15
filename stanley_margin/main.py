@@ -10,6 +10,8 @@ MA_SLOW = 80
 MA_MID = 30
 MA_FAST = 8
 MA_TIME = 120
+CONFIRM_TIME = 4
+
 # endregion
 
 
@@ -36,24 +38,27 @@ if __name__ == "__main__":
     parser.add_argument('--mid',  default=MA_MID, type=int)
     parser.add_argument('--slow',  default=MA_SLOW, type=int)
     parser.add_argument('--time',  default=MA_TIME, type=int)
+    parser.add_argument('--confirm',  default=CONFIRM_TIME, type=int)
+
     args = parser.parse_args()
 
     PERIOD_MA_SLOW = args.slow
     PERIOD_MA_MID = args.mid
     PERIOD_MA_FAST = args.fast
     PERIOD_MA_TIME = args.time
+    PERIOD_CONFIRM = args.confirm
 
-    strategy_ltc = Strategy('BTC_LTC')
-    strategy_str = Strategy('BTC_STR')
-    strategy_xrp = Strategy('BTC_XRP')
-    strategy_eth = Strategy('BTC_ETH')
-    strategy_fct = Strategy('BTC_FCT')
-    strategy_bts = Strategy('BTC_BTS')
-    strategy_xmr = Strategy('BTC_XMR')
-    strategy_dash = Strategy('BTC_DASH')
-    strategy_maid = Strategy('BTC_MAID')
-    strategy_doge = Strategy('BTC_DOGE')
-    strategy_clam = Strategy('BTC_CLAM')
+    strategy_ltc = Strategy('BTC_LTC', PERIOD_CONFIRM)
+    strategy_str = Strategy('BTC_STR', PERIOD_CONFIRM)
+    strategy_xrp = Strategy('BTC_XRP', PERIOD_CONFIRM)
+    strategy_eth = Strategy('BTC_ETH', PERIOD_CONFIRM)
+    strategy_fct = Strategy('BTC_FCT', PERIOD_CONFIRM)
+    strategy_bts = Strategy('BTC_BTS', PERIOD_CONFIRM)
+    strategy_xmr = Strategy('BTC_XMR', PERIOD_CONFIRM)
+    strategy_dash = Strategy('BTC_DASH', PERIOD_CONFIRM)
+    strategy_maid = Strategy('BTC_MAID', PERIOD_CONFIRM)
+    strategy_doge = Strategy('BTC_DOGE', PERIOD_CONFIRM)
+    strategy_clam = Strategy('BTC_CLAM', PERIOD_CONFIRM)
 
     current_btc = poloniexAPI.get_btc_balance('BTC_XRP')
     current_str = poloniexAPI.get_balance('BTC_STR')
@@ -72,7 +77,7 @@ if __name__ == "__main__":
             current_bts + current_xmr + current_dash + current_maid + current_doge + current_clam )
     #print("Balance:%f -- BTC = %f -- ETH = %f -- XRP = %f" % (current_total, current_btc, current_eth, current_xrp))
     print("Current Total Balance:%f  " % (current_btc))
-    print("MA Period:%f  MA Slow:%f  MA Mid:%f  MA Fast:%f  " % (PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST))
+    print("MA Period:%f  MA Slow:%f  MA Mid:%f  MA Fast:%f  Confirm:%s " % (PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST, PERIOD_CONFIRM))
 
 
     while True:
@@ -81,27 +86,27 @@ if __name__ == "__main__":
         print("Date Time:%s  " % (current_time))
 
         # one or more strategies below
-        strategy_ltc.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        strategy_ltc.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM)
         time.sleep(0.2)
         #strategy_str.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
         time.sleep(0.2)
-        strategy_eth.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        strategy_eth.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM )
         time.sleep(0.2)
-        strategy_xrp.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        strategy_xrp.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM)
         time.sleep(0.2)
-        strategy_dash.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        strategy_dash.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM)
         time.sleep(0.2)
-        strategy_bts.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        strategy_bts.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM)
         time.sleep(0.2)
-        strategy_fct.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        strategy_fct.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM)
         time.sleep(0.2)
-        strategy_xmr.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        strategy_xmr.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM)
         time.sleep(0.2)
-        strategy_maid.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        strategy_maid.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM)
         time.sleep(0.2)
-        #strategy_doge.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        #strategy_doge.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM)
         time.sleep(0.2)
-        strategy_clam.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW)
+        strategy_clam.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM)
 
 
         #test_info(SYMBOL)

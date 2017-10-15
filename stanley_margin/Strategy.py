@@ -160,10 +160,10 @@ class Strategy:
     confirm = 4
     initiate = 0
 
-    def __init__(self, symbol):
+    def __init__(self, symbol, confirm_period):
         self.SYMBOL = symbol
         self.ticket = 0
-        self.confirm = 4
+        self.confirm = confirm_period
         self.initiate = 0
     def crossover_strategy(self, time_period, fast_period, mid_period, slow_period, confirm_period):
         try:
