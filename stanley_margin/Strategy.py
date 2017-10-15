@@ -72,7 +72,7 @@ def buy_margin(ask, symbol):
     elif value < 0.02:
         print("Res %s not enough margin: %f" % (symbol, value))
         ret = 'no_margin'
-    print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, ask, value))
+    print("Buy %s amount = %s at price %f, value %f" % (symbol, amount, ask, value))
 
     #if res != 'success':
     #    raise BaseException('### Trade Buy error')
@@ -108,17 +108,23 @@ def sell_margin(bid, symbol):
     if value > 0.02:
         if value * factor > 0.02:
             amount = amount * factor
-            res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
+            print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
+
+            res = poloniexAPI.polo.marginSell(symbol, rate=bid, amount=amount, lendingRate=0.02)  # if you want margin trade
             print("Res %s at price %f" % (res, bid))
             ret = 'success'
         elif value * factor * 3 > 0.02:
             amount = amount * factor * 3
-            res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
+            print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
+
+            res = poloniexAPI.polo.marginSell(symbol, rate=bid, amount=amount, lendingRate=0.02)  # if you want margin trade
             print("Res %s at price %f" % (res, bid))
             ret = 'success'
         elif value * factor * 6 > 0.02:
             amount = amount * factor * 6
-            res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
+            print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
+
+            res = poloniexAPI.polo.marginSell(symbol, rate=bid, amount=amount, lendingRate=0.02)  # if you want margin trade
             print("Res %s at price %f" % (res, bid))
             ret = 'success'
         else:
@@ -127,7 +133,6 @@ def sell_margin(bid, symbol):
     elif value < 0.02:
         print("Res %s not enough margin: %f" % (symbol, value))
         ret = 'no_margin'
-    print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
 
      # fix it when uncomment!
     #if res != 'success':
@@ -160,7 +165,7 @@ class Strategy:
         self.ticket = 0
         self.confirm = 4
         self.initiate = 0
-    def crossover_strategy(self, time_period, fast_period, mid_period, slow_period):
+    def crossover_strategy(self, time_period, fast_period, mid_period, slow_period, confirm_period):
         try:
             fast_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=fast_period)
             time.sleep(0.2)  # safe
@@ -251,7 +256,7 @@ class Strategy:
 
 
             elif self.is_sell_open is False and self.is_buy_open is False :
-                self.confirm = 4
+                self.confirm = confirm_period
                 print("%s is_closed" % (self.SYMBOL ))
                 if current_margin > 0.42:
                     if  fast_ma < slow_ma and fast_ma < mid_ma: # and slow_ma <= mid_ma:
@@ -260,6 +265,7 @@ class Strategy:
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
                         else:
+                            print("%s is_sell_open new entry" % (self.SYMBOL ))
                             if sell_margin(bid, self.SYMBOL) == "success":
                                 self.ticket = 0
                                 self.confirm = 20
