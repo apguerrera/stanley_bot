@@ -118,3 +118,16 @@ def get_current_margin():
     print("My current margin = %s" % (balance["currentMargin"]))
     #print("I have %s %s symbol!" % ( balance, symbol))
     return float(balance["currentMargin"])
+
+
+def exit_buy_margin(ask, symbol):
+    res = polo.closeMarginPosition(currencyPair=symbol)  # close margin trade
+
+    print("Res %s at price %f" % (res, ask))
+    return res
+
+def exit_sell_margin(bid, symbol):
+    res = polo.closeMarginPosition(currencyPair=symbol)  # close margin trade
+    print("Res %s at price %f" % (res, bid))
+
+    return res

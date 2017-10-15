@@ -134,17 +134,6 @@ def sell_margin(bid, symbol):
     return ret
 
 
-def exit_buy_margin(ask, symbol):
-    res = poloniexAPI.polo.closeMarginPosition(currencyPair=symbol)  # close margin trade
-
-    print("Res %s at price %f" % (res, ask))
-    return res
-
-def exit_sell_margin(bid, symbol):
-    res = poloniexAPI.polo.closeMarginPosition(currencyPair=symbol)  # close margin trade
-    print("Res %s at price %f" % (res, bid))
-
-    return res
 
 
 class Strategy:
@@ -211,14 +200,14 @@ class Strategy:
                         else:
                             self.ticket = 0
                     elif  fast_ma < mid_ma:
-                        exit_buy_margin(ask, self.SYMBOL)
+                        poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
                         self.ticket = 0
                     elif  fast_ma < slow_ma:
-                        exit_buy_margin(ask, self.SYMBOL)
+                        poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
                         self.ticket = 0
                 else:
                     if  fast_ma < mid_ma:
-                        exit_buy_margin(ask, self.SYMBOL)
+                        poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
                         self.ticket = 0
                     else:
                         self.ticket = 0
@@ -237,14 +226,14 @@ class Strategy:
                         else:
                             self.ticket = 0
                     elif  fast_ma > mid_ma:
-                        exit_sell_margin(bid, self.SYMBOL)
+                        poloniexAPI.exit_sell_margin(bid, self.SYMBOL)
                         self.ticket = 0
                     elif  fast_ma > slow_ma:
-                        exit_sell_margin(bid, self.SYMBOL)
+                        poloniexAPI.exit_sell_margin(bid, self.SYMBOL)
                         self.ticket = 0
                 else:
                     if  fast_ma > mid_ma:
-                        exit_sell_margin(bid, self.SYMBOL)
+                        poloniexAPI.exit_sell_margin(bid, self.SYMBOL)
                         self.ticket = 0
                     else:
                         self.ticket = 0
