@@ -62,7 +62,7 @@ def get_ma(symbol, timeframe, period, source='close'):
 
 def sell_margin_api(symbol, bid, amount):
 
-    res = polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
+    res = polo.marginSell(symbol, rate=bid, amount=amount, lendingRate=0.02)  # if you want margin trade
 
     return res
 
