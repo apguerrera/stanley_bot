@@ -166,7 +166,9 @@ class Strategy:
             alt_converted = float(current_alt)  * float(last_price['bids'][0][0])
             ask = float(last_price['asks'][0][0])*1.005
             bid = float(last_price['bids'][0][0])*0.995
-            current_margin = poloniexAPI.get_current_margin()
+            current_margin = poloniexAPI.get_current_margin()  # ratio
+            alt_margin = poloniexAPI.get_margin_total(self.SYMBOL)
+            net_margin = poloniexAPI.get_net_margin()  # btc total value
 
             margin_type = poloniexAPI.get_margin_type(self.SYMBOL)
             time.sleep(0.2)  # safe
@@ -185,12 +187,23 @@ class Strategy:
             print("%s confirm %.0f at ticket %.0f" % (self.SYMBOL, self.confirm, self.ticket))
             print("%s sell open %.0f buy open %.0f" % (self.SYMBOL, self.is_sell_open, self.is_buy_open))
             print("%s slow_ma %f mid_ma %f fast_ma %f" % (self.SYMBOL, slow_ma, mid_ma,fast_ma ))
+            print("%s alt_margin %f and net_margin %f" % (self.SYMBOL, alt_margin, net_margin))
 
+
+            if abs(alt_margin) > net_margin :    # max margin per coin
+                print("%s alt_converted %f greater than current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
+                poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
+                self.ticket = 0
+            elif abs(alt_margin) > net_margin * 0.8:    # max margin per coin
+                print("%s alt_converted %f greater than current_margin %f" % (self.SYMBOL, alt_margin, current_margin))
+                self.ticket = 0
 
             if self.is_buy_open:
-                print("%s is_buy_open" % (self.SYMBOL ))
-                if current_margin > 0.50:
-                    if  fast_ma > slow_ma:
+                if fast_ma < mid_ma:
+                    poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
+                    self.ticket = 0
+                elif fast_ma > slow_ma:
+                    if  current_margin > 0.50:
                         if fast_ma > mid_ma:
                             if self.ticket < self.confirm:
                                 self.ticket = self.ticket + 1
@@ -199,63 +212,40 @@ class Strategy:
                                     self.ticket = 0
                         else:
                             self.ticket = 0
-                    elif  fast_ma < mid_ma:
-                        poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
-                        self.ticket = 0
-                    elif  fast_ma < slow_ma:
-                        poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
-                        self.ticket = 0
                 else:
-                    if  fast_ma < mid_ma:
-                        poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
-                        self.ticket = 0
-                    else:
-                        self.ticket = 0
+                    self.ticket = 0
 
             elif self.is_sell_open:
-                print("%s is_sell_open" % (self.SYMBOL ))
-                if current_margin > 0.50:
-                    if  fast_ma < slow_ma:
+                if  fast_ma > mid_ma:
+                    poloniexAPI.exit_sell_margin(bid, self.SYMBOL)
+                    self.ticket = 0
+                elif fast_ma < slow_ma:
+                    if  current_margin > 0.50:
                         if fast_ma < mid_ma:
                             if self.ticket < self.confirm:
                                 self.ticket = self.ticket + 1
                             else:
                                 if sell_margin(bid, self.SYMBOL) == "success":
                                     self.ticket = 0
-
                         else:
                             self.ticket = 0
-                    elif  fast_ma > mid_ma:
-                        poloniexAPI.exit_sell_margin(bid, self.SYMBOL)
-                        self.ticket = 0
-                    elif  fast_ma > slow_ma:
-                        poloniexAPI.exit_sell_margin(bid, self.SYMBOL)
-                        self.ticket = 0
                 else:
-                    if  fast_ma > mid_ma:
-                        poloniexAPI.exit_sell_margin(bid, self.SYMBOL)
-                        self.ticket = 0
-                    else:
-                        self.ticket = 0
+                    self.ticket = 0
 
 
             elif self.is_sell_open is False and self.is_buy_open is False :
                 self.confirm = confirm_period
-                print("%s is_closed" % (self.SYMBOL ))
                 if current_margin > 0.42:
                     if  fast_ma < slow_ma and fast_ma < mid_ma: # and slow_ma <= mid_ma:
                         print("%s is_sell_open new entry" % (self.SYMBOL ))
-
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
                         else:
-                            print("%s is_sell_open new entry" % (self.SYMBOL ))
                             if sell_margin(bid, self.SYMBOL) == "success":
                                 self.ticket = 0
                                 self.confirm = 20
                     elif  fast_ma > slow_ma and fast_ma > mid_ma: # and slow_ma >= mid_ma:
                         print("%s is_buy_open new entry" % (self.SYMBOL ))
-
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
                         else:

@@ -61,21 +61,17 @@ def get_ma(symbol, timeframe, period, source='close'):
 
 
 def sell_margin_api(symbol, bid, amount):
-
     res = polo.marginSell(symbol, rate=bid, amount=amount, lendingRate=0.02)  # if you want margin trade
-
     return res
 
 def get_balance(symbol):
     my_dict = defaultdict(int)
     coin =  symbol.replace("BTC_", "")
     balance = polo.returnAvailableAccountBalances()
-
     if coin in balance:
         bal_sym = balance["margin"][coin]
     else:
         bal_sym = 0
-
     #print("I have %s %s!" % (bal_sym, symbol) )
     #print("I have %s %s symbol!" % ( balance, symbol))
     return float(bal_sym)
@@ -85,7 +81,6 @@ def get_btc_balance(symbol):
     #bal_sym = balance[symbol]
     coin_balance = float(balance[symbol]["BTC"])
     relative_balance = coin_balance*0.9  # 2= 50% of current balance
-
     #print("I have %s %s!" % (balance[symbol]["BTC"], symbol) )
     #print("I have %s %s!" % ( bal_sym["btcValue"], symbol))
     return float(relative_balance)
@@ -107,27 +102,41 @@ def get_margin_balance(symbol):
     balance = polo.returnTradableBalances()
     coin_balance = float(balance[symbol][coin])
     relative_balance = coin_balance*0.90  # 2= 50% of current balance
-
     print("My malt trade balance = %s at price %f" % (coin, coin_balance))
     #print("I have %s %s symbol!" % ( balance, symbol))
     return float(relative_balance)
 
 def get_current_margin():
-
     balance = polo.returnMarginAccountSummary()
     print("My current margin = %s" % (balance["currentMargin"]))
     #print("I have %s %s symbol!" % ( balance, symbol))
     return float(balance["currentMargin"])
 
-
 def exit_buy_margin(ask, symbol):
     res = polo.closeMarginPosition(currencyPair=symbol)  # close margin trade
-
     print("Res %s at price %f" % (res, ask))
     return res
 
 def exit_sell_margin(bid, symbol):
     res = polo.closeMarginPosition(currencyPair=symbol)  # close margin trade
     print("Res %s at price %f" % (res, bid))
-
     return res
+
+def get_trade_history(symbol):
+    res = polo.returnTradeHistory(currencyPair=symbol, limit=1)  # close margin trade
+    print("Res %s " % (res))
+    return res
+
+def get_margin_total(symbol):
+    margin = polo.getMarginPosition(currencyPair=symbol)
+    margin_total = float(margin["total"])
+    print("Margin for %s with total %f" % (symbol, margin_total))
+
+    return margin_total
+    #return margin
+
+def get_net_margin():
+    balance = polo.returnMarginAccountSummary()
+    print("My current margin = %s" % (balance["netValue"]))
+    #print("I have %s %s symbol!" % ( balance, symbol))
+    return float(balance["netValue"])

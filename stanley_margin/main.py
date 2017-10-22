@@ -39,7 +39,6 @@ if __name__ == "__main__":
     parser.add_argument('--slow',  default=MA_SLOW, type=int)
     parser.add_argument('--time',  default=MA_TIME, type=int)
     parser.add_argument('--confirm',  default=CONFIRM_TIME, type=int)
-
     args = parser.parse_args()
 
     PERIOD_MA_SLOW = args.slow
@@ -60,23 +59,6 @@ if __name__ == "__main__":
     strategy_doge = Strategy('BTC_DOGE', PERIOD_CONFIRM)
     strategy_clam = Strategy('BTC_CLAM', PERIOD_CONFIRM)
 
-    current_btc = poloniexAPI.get_btc_balance('BTC_XRP')
-    current_str = poloniexAPI.get_balance('BTC_STR')
-    current_eth = poloniexAPI.get_balance('BTC_ETH')
-    current_xrp = poloniexAPI.get_balance('BTC_XRP')
-    current_ltc = poloniexAPI.get_balance('BTC_LTC')
-    current_fct = poloniexAPI.get_balance('BTC_FCT')
-    current_bts = poloniexAPI.get_balance('BTC_BTS')
-    current_xmr = poloniexAPI.get_balance('BTC_XMR')
-    current_dash = poloniexAPI.get_balance('BTC_DASH')
-    current_maid = poloniexAPI.get_balance('BTC_MAID')
-    current_doge = poloniexAPI.get_balance('BTC_DOGE')
-    current_clam = poloniexAPI.get_balance('BTC_CLAM')
-
-    current_total =  (current_btc + current_eth + current_xrp + current_ltc + current_fct + current_str +
-            current_bts + current_xmr + current_dash + current_maid + current_doge + current_clam )
-    #print("Balance:%f -- BTC = %f -- ETH = %f -- XRP = %f" % (current_total, current_btc, current_eth, current_xrp))
-    print("Current Total Balance:%f  " % (current_btc))
     print("MA Period:%f  MA Slow:%f  MA Mid:%f  MA Fast:%f  Confirm:%s " % (PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST, PERIOD_CONFIRM))
 
 
