@@ -90,8 +90,8 @@ def buy_margin(ask, symbol):
             print("Res %s not enough margin: %f" % (symbol, value))
             ret = 'no_margin'
     elif value < 0.02:
-        print("Res %s not enough margin: %f" % (symbol, value))
-        ret = 'no_margin'
+        print("Res %s not enough margin balance: %f" % (symbol, value))
+        ret = 'no_balance'
     print("Buy %s amount = %s at price %f, value %f" % (symbol, amount, ask, value))
 
     #if res != 'success':
@@ -125,8 +125,8 @@ def sell_margin(bid, symbol):
             print("Res %s not enough margin: %f" % (symbol, value))
             ret = 'no_margin'
     elif value < 0.02:
-        print("Res %s not enough margin: %f" % (symbol, value))
-        ret = 'no_margin'
+        print("Res %s not enough margin balance: %f" % (symbol, value))
+        ret = 'no_balance'
     print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
 
     #if res != 'success':
@@ -149,15 +149,17 @@ class Strategy:
         self.ticket = 0
         self.confirm = confirm_period
         self.initiate = 0
-    def crossover_strategy(self, time_period, fast_period, mid_period, slow_period, confirm_period):
+        self.trim = 0
+    def crossover_strategy(self, time_period, fast_period, mid_period, slow_period, confirm_period, trim_count):
         try:
+            time.sleep(0.2)
             fast_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=fast_period)
             time.sleep(0.2)  # safe
             slow_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=slow_period)
             time.sleep(0.2)  # safe
             mid_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=mid_period)
             time.sleep(0.2)  # safe
-
+            self.trim  = trim_count
             current_btc = poloniexAPI.get_btc_balance(self.SYMBOL)
             time.sleep(0.2)  # safe
             current_alt = poloniexAPI.get_margin_balance(self.SYMBOL)
@@ -177,7 +179,7 @@ class Strategy:
                 self.is_sell_open = True
             elif margin_type == "long":
                 self.is_buy_open = True
-                self.is_sell_open = False
+                self.is_sell_open = Fale
             elif margin_type == "none":
                 self.is_buy_open = False
                 self.is_sell_open = False
@@ -188,18 +190,23 @@ class Strategy:
             print("%s sell open %.0f buy open %.0f" % (self.SYMBOL, self.is_sell_open, self.is_buy_open))
             print("%s slow_ma %f mid_ma %f fast_ma %f" % (self.SYMBOL, slow_ma, mid_ma,fast_ma ))
             print("%s alt_margin %f and net_margin %f" % (self.SYMBOL, alt_margin, net_margin))
+            print("%s self trim %.0f " % (self.SYMBOL, self.trim))
 
 
             if abs(alt_margin) > net_margin :    # max margin per coin
                 print("%s alt_converted %f greater than current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
                 poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
                 self.ticket = 0
-            elif abs(alt_margin) > net_margin * 0.8:    # max margin per coin
-                print("%s alt_converted %f greater than current_margin %f" % (self.SYMBOL, alt_margin, current_margin))
+            elif abs(alt_margin) > net_margin * 0.6:    # max margin per coin
+                print("%s alt_converted %f greater than current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
                 self.ticket = 0
 
             if self.is_buy_open:
-                if fast_ma < mid_ma:
+                if self.trim > 0:
+                    poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
+                    self.trim = self.trim - 1
+                    self.ticket = 0
+                elif fast_ma < mid_ma:
                     poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
                     self.ticket = 0
                 elif fast_ma > slow_ma:
@@ -216,7 +223,11 @@ class Strategy:
                     self.ticket = 0
 
             elif self.is_sell_open:
-                if  fast_ma > mid_ma:
+                if self.trim > 0:
+                    poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
+                    self.trim = self.trim - 1
+                    self.ticket = 0
+                elif  fast_ma > mid_ma:
                     poloniexAPI.exit_sell_margin(bid, self.SYMBOL)
                     self.ticket = 0
                 elif fast_ma < slow_ma:
@@ -241,22 +252,30 @@ class Strategy:
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
                         else:
-                            if sell_margin(bid, self.SYMBOL) == "success":
+                            margin_res = sell_margin(bid, self.SYMBOL)
+                            if  margin_res == "success":
                                 self.ticket = 0
                                 self.confirm = 20
+                            elif margin_res == "no_balance":
+                                self.trim = self.trim + 1
+
                     elif  fast_ma > slow_ma and fast_ma > mid_ma: # and slow_ma >= mid_ma:
                         print("%s is_buy_open new entry" % (self.SYMBOL ))
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
                         else:
-                            if buy_margin(ask, self.SYMBOL) == "success":
+                            margin_res = buy_margin(ask, self.SYMBOL)
+                            if  margin_res == "success":
                                 self.ticket = 0
                                 self.confirm = 20
+                            elif margin_res == "no_balance":
+                                self.trim = self.trim + 1
                     else:
                         self.ticket = 0
 
         except:
             self.ticket = 0
             print("%s error 0" % (self.SYMBOL ))
-            raise
+
+        return self.trim
         #    def supertrend_strategy(self, fast_period, slow_period):
