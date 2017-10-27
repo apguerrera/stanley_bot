@@ -291,6 +291,7 @@ class Strategy:
         except ValueError, ve:
             self.ticket = 0
             print("%s error 0: \n Error: %s" % (self.SYMBOL, ve))
-
+            return self.trim
+            
         return self.trim
         #    def supertrend_strategy(self, fast_period, slow_period):
