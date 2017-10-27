@@ -5,3 +5,5 @@ stanley_margin/passwords.py
 *.pyc
 
 *.pyc
+
+stanley_margin/Strategy.pyc
