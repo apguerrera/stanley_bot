@@ -137,6 +137,6 @@ def get_margin_total(symbol):
 
 def get_net_margin():
     balance = polo.returnMarginAccountSummary()
-    print("My current margin = %s" % (balance["netValue"]))
+    print("My net balance = %s" % (balance["netValue"]))
     #print("I have %s %s symbol!" % ( balance, symbol))
     return float(balance["netValue"])

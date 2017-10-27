@@ -159,7 +159,12 @@ class Strategy:
             time.sleep(0.2)  # safe
             mid_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=mid_period)
             time.sleep(0.2)  # safe
+
             self.trim  = trim_count
+
+            net_margin = poloniexAPI.get_net_margin()  # btc total value
+            alt_margin = poloniexAPI.get_margin_total(self.SYMBOL)
+
             current_btc = poloniexAPI.get_btc_balance(self.SYMBOL)
             time.sleep(0.2)  # safe
             current_alt = poloniexAPI.get_margin_balance(self.SYMBOL)
@@ -169,8 +174,6 @@ class Strategy:
             ask = float(last_price['asks'][0][0])*1.005
             bid = float(last_price['bids'][0][0])*0.995
             current_margin = poloniexAPI.get_current_margin()  # ratio
-            alt_margin = poloniexAPI.get_margin_total(self.SYMBOL)
-            net_margin = poloniexAPI.get_net_margin()  # btc total value
 
             margin_type = poloniexAPI.get_margin_type(self.SYMBOL)
             time.sleep(0.2)  # safe
@@ -188,7 +191,7 @@ class Strategy:
             print("%s ask %f at bid %f" % (self.SYMBOL, ask, bid))
             print("%s confirm %.0f at ticket %.0f" % (self.SYMBOL, self.confirm, self.ticket))
             print("%s sell open %.0f buy open %.0f" % (self.SYMBOL, self.is_sell_open, self.is_buy_open))
-            print("%s slow_ma %f mid_ma %f fast_ma %f" % (self.SYMBOL, slow_ma, mid_ma,fast_ma ))
+            print("%s slow_ma %.8f mid_ma %.8f fast_ma %.8f" % (self.SYMBOL, slow_ma, mid_ma,fast_ma ))
             print("%s alt_margin %f and net_margin %f" % (self.SYMBOL, alt_margin, net_margin))
             print("%s self trim %.0f " % (self.SYMBOL, self.trim))
 
@@ -197,8 +200,9 @@ class Strategy:
                 print("%s alt_converted %f greater than current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
                 poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
                 self.ticket = 0
-            elif abs(alt_margin) > net_margin * 0.6:    # max margin per coin
-                print("%s alt_converted %f greater than current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
+
+            elif abs(alt_margin) > net_margin * 0.5:    # max margin per coin
+                print("%s alt_converted %f greater than half current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
                 self.ticket = 0
 
             if self.is_buy_open:

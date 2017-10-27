@@ -14,7 +14,6 @@ CONFIRM_TIME = 4
 
 # endregion
 
-
 def test_info(symbol):
     slow_ma = poloniexAPI.get_ma(symbol, timeframe=PERIOD_MA_TIME, period=PERIOD_MA_SLOW)
     time.sleep(0.2)  # safe
@@ -31,6 +30,19 @@ def test_info(symbol):
     #print('lash close = ' + str(c))
     print( str(symbol)+':' + str(c) +' - ' + str(PERIOD_MA_SLOW) + ' ma = ' + str(slow_ma) + ' - ' + str(PERIOD_MA_FAST) + ' ma = ' + str(fast_ma))
 
+def init_strategy(PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST, PERIOD_CONFIRM):
+    print("MA Period:%f  MA Slow:%f  MA Mid:%f  MA Fast:%f  Confirm:%s " % (PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST, PERIOD_CONFIRM))
+
+def current_time():
+    current_time = datetime.datetime.now()
+    print("Date Time:%s  " % (current_time))
+
+def net_margin():
+    net_margin = poloniexAPI.get_net_margin()
+    print("Total Margin Balance: %s  " % (net_margin))
+
+
+# main
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -47,6 +59,8 @@ if __name__ == "__main__":
     PERIOD_MA_TIME = args.time
     PERIOD_CONFIRM = args.confirm
 
+    init_strategy(PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST, PERIOD_CONFIRM)
+    
     strategy_ltc = Strategy('BTC_LTC', PERIOD_CONFIRM)
     strategy_str = Strategy('BTC_STR', PERIOD_CONFIRM)
     strategy_xrp = Strategy('BTC_XRP', PERIOD_CONFIRM)
@@ -65,32 +79,25 @@ if __name__ == "__main__":
 
     while True:
 
-        current_time = datetime.datetime.now()
-        print("Date Time:%s  " % (current_time))
+        current_time()
+        net_margin()
 
         # one or more strategies below
         trim = strategy_ltc.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
         #trim = strategy_str.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-        print("Trim:%s  " % (str(trim)))
         trim = strategy_eth.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM , trim_count=trim)
-        print("Trim:%s  " % (str(trim)))
-
         trim = strategy_xrp.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-        print("Trim:%s  " % (str(trim)))
         trim = strategy_dash.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
         trim = strategy_bts.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-        print("Trim:%s  " % (str(trim)))
         trim = strategy_fct.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
         trim = strategy_xmr.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-        print("Trim:%s  " % (str(trim)))
         trim = strategy_maid.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
         #trim = strategy_doge.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
         trim = strategy_clam.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
 
 
+
         #test_info(SYMBOL)
-        #test_info('BTC_ETH')
-        #test_info('BTC_XRP')
         print('--------------')
 
         time.sleep(5)
