@@ -185,7 +185,7 @@ class Strategy:
                 self.is_sell_open = True
             elif margin_type == "long":
                 self.is_buy_open = True
-                self.is_sell_open = Fale
+                self.is_sell_open = False
             elif margin_type == "none":
                 self.is_buy_open = False
                 self.is_sell_open = False
@@ -292,6 +292,6 @@ class Strategy:
             self.ticket = 0
             print("%s error 0: \n Error: %s" % (self.SYMBOL, ve))
             return self.trim
-            
+
         return self.trim
         #    def supertrend_strategy(self, fast_period, slow_period):

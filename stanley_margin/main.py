@@ -60,7 +60,7 @@ if __name__ == "__main__":
     PERIOD_CONFIRM = args.confirm
 
     init_strategy(PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST, PERIOD_CONFIRM)
-    
+
     strategy_ltc = Strategy('BTC_LTC', PERIOD_CONFIRM)
     strategy_str = Strategy('BTC_STR', PERIOD_CONFIRM)
     strategy_xrp = Strategy('BTC_XRP', PERIOD_CONFIRM)
@@ -72,8 +72,6 @@ if __name__ == "__main__":
     strategy_maid = Strategy('BTC_MAID', PERIOD_CONFIRM)
     strategy_doge = Strategy('BTC_DOGE', PERIOD_CONFIRM)
     strategy_clam = Strategy('BTC_CLAM', PERIOD_CONFIRM)
-
-    print("MA Period:%f  MA Slow:%f  MA Mid:%f  MA Fast:%f  Confirm:%s " % (PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST, PERIOD_CONFIRM))
 
     trim = 0
 
