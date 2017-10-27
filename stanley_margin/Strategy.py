@@ -127,6 +127,9 @@ def sell_margin(bid, symbol):
     elif value < 0.02:
         print("Res %s not enough margin balance: %f" % (symbol, value))
         ret = 'no_balance'
+    else:
+        print("Res %s no value from API: %f" % (symbol, value))
+        ret = 'no_amount'
     print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
 
     #if res != 'success':
@@ -219,8 +222,12 @@ class Strategy:
                             if self.ticket < self.confirm:
                                 self.ticket = self.ticket + 1
                             else:
-                                if buy_margin(ask, self.SYMBOL) == "success":
-                                    self.ticket = 0
+                            margin_res = buy_margin(ask, self.SYMBOL)
+                            if  margin_res == "success":
+                                self.ticket = 0
+                                self.confirm = 20
+                            elif margin_res == "no_balance":
+                                self.trim = self.trim + 1
                         else:
                             self.ticket = 0
                 else:
@@ -240,8 +247,12 @@ class Strategy:
                             if self.ticket < self.confirm:
                                 self.ticket = self.ticket + 1
                             else:
-                                if sell_margin(bid, self.SYMBOL) == "success":
+                                margin_res = sell_margin(bid, self.SYMBOL)
+                                if  margin_res == "success":
                                     self.ticket = 0
+                                    self.confirm = 20
+                                elif margin_res == "no_balance":
+                                    self.trim = self.trim + 1
                         else:
                             self.ticket = 0
                 else:
