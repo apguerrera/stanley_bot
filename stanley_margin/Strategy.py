@@ -222,12 +222,12 @@ class Strategy:
                             if self.ticket < self.confirm:
                                 self.ticket = self.ticket + 1
                             else:
-                            margin_res = buy_margin(ask, self.SYMBOL)
-                            if  margin_res == "success":
-                                self.ticket = 0
-                                self.confirm = 20
-                            elif margin_res == "no_balance":
-                                self.trim = self.trim + 1
+                                margin_res = buy_margin(ask, self.SYMBOL)
+                                if  margin_res == "success":
+                                    self.ticket = 0
+                                    self.confirm = 20
+                                elif margin_res == "no_balance":
+                                    self.trim = self.trim + 1
                         else:
                             self.ticket = 0
                 else:
