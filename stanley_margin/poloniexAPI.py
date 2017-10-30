@@ -108,7 +108,7 @@ def get_margin_balance(symbol):
 
 def get_current_margin():
     balance = polo.returnMarginAccountSummary()
-    print("My current margin = %s" % (balance["currentMargin"]))
+    #print("My current margin = %s" % (balance["currentMargin"]))
     #print("I have %s %s symbol!" % ( balance, symbol))
     return float(balance["currentMargin"])
 
@@ -130,13 +130,13 @@ def get_trade_history(symbol):
 def get_margin_total(symbol):
     margin = polo.getMarginPosition(currencyPair=symbol)
     margin_total = float(margin["total"])
-    print("Margin for %s with total %f" % (symbol, margin_total))
+    print("%s with total %f" % (symbol, margin_total))
 
     return margin_total
     #return margin
 
 def get_net_margin():
     balance = polo.returnMarginAccountSummary()
-    print("My net balance = %s" % (balance["netValue"]))
+    #print("My net balance = %s" % (balance["netValue"]))
     #print("I have %s %s symbol!" % ( balance, symbol))
     return float(balance["netValue"])

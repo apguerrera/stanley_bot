@@ -6,11 +6,11 @@ import argparse
 
 # region ### GLOBALS
 
-MA_SLOW = 80
+MA_SLOW = 120
 MA_MID = 30
-MA_FAST = 8
+MA_FAST = 10
 MA_TIME = 120
-CONFIRM_TIME = 4
+CONFIRM_TIME = 3
 
 # endregion
 
@@ -39,7 +39,10 @@ def current_time():
 
 def net_margin():
     net_margin = poloniexAPI.get_net_margin()
-    print("Total Margin Balance: %s  " % (net_margin))
+    print("Margin Balance = %s  " % (net_margin))
+    current_margin = poloniexAPI.get_current_margin()
+    print("Current Margin = %s" % (current_margin))
+
 
 
 # main
@@ -80,7 +83,9 @@ if __name__ == "__main__":
         current_time()
         net_margin()
 
+        print('--------------')
         # one or more strategies below
+
         trim = strategy_ltc.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
         #trim = strategy_str.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
         trim = strategy_eth.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM , trim_count=trim)
