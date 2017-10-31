@@ -11,24 +11,8 @@ MA_MID = 30
 MA_FAST = 10
 MA_TIME = 120
 CONFIRM_TIME = 3
-
+symbols = ['BTC_LTC', 'BTC_XRP', 'BTC_ETH','BTC_FCT','BTC_BTS','BTC_XMR','BTC_DASH','BTC_MAID','BTC_CLAM']
 # endregion
-
-def test_info(symbol):
-    slow_ma = poloniexAPI.get_ma(symbol, timeframe=PERIOD_MA_TIME, period=PERIOD_MA_SLOW)
-    time.sleep(0.2)  # safe
-    fast_ma = poloniexAPI.get_ma(symbol, timeframe=PERIOD_MA_TIME, period=PERIOD_MA_FAST)
-
-    ohlc = poloniexAPI.get_chart_data(symbol, period=PERIOD_MA_SLOW)
-    o = ohlc[-1]['open']
-    h = ohlc[-2]['high']
-    l = ohlc[-2]['low']
-    c = ohlc[-2]['close']
-    #print('current open = ' + str(o))
-    #print('lash high = ' + str(h))
-    #print('lash low = ' + str(l))
-    #print('lash close = ' + str(c))
-    print( str(symbol)+':' + str(c) +' - ' + str(PERIOD_MA_SLOW) + ' ma = ' + str(slow_ma) + ' - ' + str(PERIOD_MA_FAST) + ' ma = ' + str(fast_ma))
 
 def init_strategy(PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST, PERIOD_CONFIRM):
     print("MA Period:%f  MA Slow:%f  MA Mid:%f  MA Fast:%f  Confirm:%s " % (PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST, PERIOD_CONFIRM))
@@ -37,16 +21,7 @@ def current_time():
     current_time = datetime.datetime.now()
     print("Date Time:%s  " % (current_time))
 
-def net_margin():
-    net_margin = poloniexAPI.get_net_margin()
-    print("Margin Balance = %s  " % (net_margin))
-    current_margin = poloniexAPI.get_current_margin()
-    print("Current Margin = %s" % (current_margin))
-
-
-
 # main
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--fast',  default=MA_FAST, type=int)
@@ -63,42 +38,21 @@ if __name__ == "__main__":
     PERIOD_CONFIRM = args.confirm
 
     init_strategy(PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST, PERIOD_CONFIRM)
-
-    strategy_ltc = Strategy('BTC_LTC', PERIOD_CONFIRM)
-    strategy_str = Strategy('BTC_STR', PERIOD_CONFIRM)
-    strategy_xrp = Strategy('BTC_XRP', PERIOD_CONFIRM)
-    strategy_eth = Strategy('BTC_ETH', PERIOD_CONFIRM)
-    strategy_fct = Strategy('BTC_FCT', PERIOD_CONFIRM)
-    strategy_bts = Strategy('BTC_BTS', PERIOD_CONFIRM)
-    strategy_xmr = Strategy('BTC_XMR', PERIOD_CONFIRM)
-    strategy_dash = Strategy('BTC_DASH', PERIOD_CONFIRM)
-    strategy_maid = Strategy('BTC_MAID', PERIOD_CONFIRM)
-    strategy_doge = Strategy('BTC_DOGE', PERIOD_CONFIRM)
-    strategy_clam = Strategy('BTC_CLAM', PERIOD_CONFIRM)
-
+    strategy_list = []
     trim = 0
 
+    for item in symbols:
+        strategy_list.append(Strategy(item, PERIOD_CONFIRM))
+
     while True:
-
         current_time()
-        net_margin()
-
+        poloniexAPI.net_margin()
         print('--------------')
         # one or more strategies below
 
-        trim = strategy_ltc.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-        #trim = strategy_str.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-        trim = strategy_eth.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM , trim_count=trim)
-        trim = strategy_xrp.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-        trim = strategy_dash.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-        trim = strategy_bts.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-        trim = strategy_fct.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-        trim = strategy_xmr.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-        trim = strategy_maid.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-        #trim = strategy_doge.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-        trim = strategy_clam.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-
-
+        for strategy in strategy_list:
+            trim = strategy.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
+            poloniexAPI.trim_position(trim, symbols)
 
         #test_info(SYMBOL)
         print('--------------')

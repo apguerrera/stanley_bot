@@ -92,7 +92,9 @@ def buy_margin(ask, symbol):
     elif value < 0.02:
         print("Res %s not enough margin balance: %f" % (symbol, value))
         ret = 'no_balance'
-    print("Buy %s amount = %s at price %f, value %f" % (symbol, amount, ask, value))
+
+    if ret == 'success':
+        print("Buy %s amount = %s at price %f, value %f" % (symbol, amount, ask, float(amount) * ask))
 
     #if res != 'success':
     #    raise BaseException('### Trade Buy error')
@@ -130,7 +132,8 @@ def sell_margin(bid, symbol):
     else:
         print("Res %s no value from API: %f" % (symbol, value))
         ret = 'no_amount'
-    print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
+    if ret == 'success':
+        print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, float(amount) * bid))
 
     #if res != 'success':
     #    raise BaseException('### Trade Sell error')
@@ -263,7 +266,7 @@ class Strategy:
             elif self.is_sell_open is False and self.is_buy_open is False :
                 self.confirm = confirm_period
                 if current_margin > 0.42:
-                    if  fast_ma < slow_ma and fast_ma < mid_ma: # and slow_ma <= mid_ma:
+                    if  bid < slow_ma and fast_ma < slow_ma and fast_ma < mid_ma: # and slow_ma <= mid_ma:
                         print("%s is_sell_open new entry" % (self.SYMBOL ))
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
@@ -275,7 +278,7 @@ class Strategy:
                             elif margin_res == "no_balance":
                                 self.trim = self.trim + 1
 
-                    elif  fast_ma > slow_ma and fast_ma > mid_ma: # and slow_ma >= mid_ma:
+                    elif  ask > slow_ma and fast_ma > slow_ma and fast_ma > mid_ma: # and slow_ma >= mid_ma:
                         print("%s is_buy_open new entry" % (self.SYMBOL ))
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2

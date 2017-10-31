@@ -140,3 +140,33 @@ def get_net_margin():
     #print("My net balance = %s" % (balance["netValue"]))
     #print("I have %s %s symbol!" % ( balance, symbol))
     return float(balance["netValue"])
+
+
+def test_info(symbol):
+    slow_ma = poloniexAPI.get_ma(symbol, timeframe=PERIOD_MA_TIME, period=PERIOD_MA_SLOW)
+    time.sleep(0.2)  # safe
+    fast_ma = poloniexAPI.get_ma(symbol, timeframe=PERIOD_MA_TIME, period=PERIOD_MA_FAST)
+
+    ohlc = poloniexAPI.get_chart_data(symbol, period=PERIOD_MA_SLOW)
+    o = ohlc[-1]['open']
+    h = ohlc[-2]['high']
+    l = ohlc[-2]['low']
+    c = ohlc[-2]['close']
+    #print('current open = ' + str(o))
+
+    print( str(symbol)+':' + str(c) +' - ' + str(PERIOD_MA_SLOW) + ' ma = ' + str(slow_ma) + ' - ' + str(PERIOD_MA_FAST) + ' ma = ' + str(fast_ma))
+
+
+
+def net_margin():
+    net_margin = get_net_margin()
+    print("Margin Balance = %s  " % (net_margin))
+    current_margin = get_current_margin()
+    print("Current Margin = %s" % (current_margin))
+
+def trim_position(trim, symbols):
+     if trim > 0:
+         print('--------------')
+         for item in symbols:
+             test = item.split('_')[1].lower()
+         print("Trimmed position = %s Trim = %s" % (test, str(trim)))
