@@ -139,7 +139,14 @@ def sell_margin(bid, symbol):
     #    raise BaseException('### Trade Sell error')
     return ret
 
+def exit_margin(price, symbol, ticket, confirm):
+    if ticket < confirm:
+        ticket = ticket + 1
+    else:
+        poloniexAPI.exit_close_margin(price, self.SYMBOL)
+        ticket = 0
 
+    return ticket
 
 
 class Strategy:
@@ -203,9 +210,6 @@ class Strategy:
                 poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
                 self.ticket = 0
 
-            elif abs(alt_margin) > net_margin * 0.5:    # max margin per coin
-                print("%s alt_converted %f greater than half current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
-                self.ticket = 0
 
             if self.is_buy_open:
                 if self.trim > 0:
@@ -213,15 +217,19 @@ class Strategy:
                     poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
                     self.trim = self.trim - 1
                     self.ticket = 0
-                elif ask < slow_ma or fast_ma < mid_ma:
-                    if self.ticket < self.confirm:
-                        self.ticket = self.ticket + 1
-                    else:
-                        poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
-                        self.ticket = 0
+
+                elif  fast_ma < mid_ma:
+                    print("%s self fast_ma < mid_ma %.0f" % (self.SYMBOL, fast_ma < mid_ma ))
+                    self.ticket = exit_margin(ask, self.SYMBOL, self.ticket, self.confirm )
+
                 elif fast_ma > slow_ma:
-                    if  current_margin > 0.50:
-                        if fast_ma > mid_ma:
+                    print("%s self fast_ma > slow_ma %.0f" % (self.SYMBOL, fast_ma > slow_ma ))
+                    if  ask < slow_ma:
+                        print("%s self ask < slow_ma %.0f" % (self.SYMBOL, ask < slow_ma))
+                        self.ticket = exit_margin(ask, self.SYMBOL, self.ticket, self.confirm )
+
+                    elif  current_margin > 0.50:
+                        if fast_ma > mid_ma and abs(alt_margin) < net_margin * 0.5:
                             if self.ticket < self.confirm:
                                 self.ticket = self.ticket + 1
                             else:
@@ -232,8 +240,10 @@ class Strategy:
                                 elif margin_res == "no_balance":
                                     self.trim = self.trim + 1
                         else:
+                            print("%s alt_converted %f greater than half current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
                             self.ticket = 0
                 else:
+                    print("%s self ticket %.0f " % (self.SYMBOL, self.ticket))
                     self.ticket = 0
 
             elif self.is_sell_open:
@@ -242,15 +252,19 @@ class Strategy:
                     poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
                     self.trim = self.trim - 1
                     self.ticket = 0
-                elif bid > slow_ma or fast_ma > mid_ma:
-                    if self.ticket < self.confirm:
-                        self.ticket = self.ticket + 1
-                    else:
-                        poloniexAPI.exit_sell_margin(bid, self.SYMBOL)
-                        self.ticket = 0
+
+                elif fast_ma > mid_ma:
+                    print("%s self fast_ma > mid_ma %.0f" % (self.SYMBOL,fast_ma > mid_ma ))
+                    self.ticket = exit_margin(bid, self.SYMBOL, self.ticket, self.confirm )
+
                 elif fast_ma < slow_ma:
-                    if  current_margin > 0.50:
-                        if fast_ma < mid_ma:
+                    print("%s self fast_ma < slow_ma %.0f" % (self.SYMBOL, fast_ma < slow_ma ))
+                    if bid > slow_ma:
+                        print("%s self bid > slow_ma %.0f" % (self.SYMBOL, bid > slow_ma ))
+                        self.ticket = exit_margin(bid, self.SYMBOL, self.ticket, self.confirm)
+
+                    elif  current_margin > 0.50:
+                        if fast_ma < mid_ma and abs(alt_margin) < net_margin * 0.5:
                                 margin_res = sell_margin(bid, self.SYMBOL)
                                 if  margin_res == "success":
                                     self.ticket = 0
@@ -258,8 +272,10 @@ class Strategy:
                                 elif margin_res == "no_balance":
                                     self.trim = self.trim + 1
                         else:
+                            print("%s alt_converted %f greater than half current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
                             self.ticket = 0
                 else:
+                    print("%s self ticket %.0f " % (self.SYMBOL, self.ticket))
                     self.ticket = 0
 
 
@@ -290,11 +306,12 @@ class Strategy:
                             elif margin_res == "no_balance":
                                 self.trim = self.trim + 1
                     else:
+                        print("%s self ticket %.0f " % (self.SYMBOL, self.ticket))
                         self.ticket = 0
 
-        except ValueError, ve:
+        except:
             self.ticket = 0
-            print("%s error 0: \n Error: %s" % (self.SYMBOL, ve))
+            print("%s error 0" % (self.SYMBOL))
             return self.trim
 
         return self.trim

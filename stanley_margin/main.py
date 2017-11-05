@@ -17,6 +17,19 @@ symbols = ['BTC_LTC', 'BTC_XRP', 'BTC_ETH','BTC_FCT','BTC_BTS','BTC_XMR','BTC_DA
 def init_strategy(PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST, PERIOD_CONFIRM):
     print("MA Period:%f  MA Slow:%f  MA Mid:%f  MA Fast:%f  Confirm:%s " % (PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST, PERIOD_CONFIRM))
 
+def strategy_ma(symbol, trim):
+    strategy_dict = {
+        "time_period": PERIOD_MA_TIME,
+        "fast_period": PERIOD_MA_FAST,
+        "mid_period": PERIOD_MA_MID,
+        "slow_period": PERIOD_MA_SLOW,
+        "confirm_period": PERIOD_CONFIRM,
+        "trim_count": trim,
+
+    }
+    print("%s time_period %s, trim_count %s" % (symbol, str(strategy_dict["time_period"]), str(strategy_dict["trim_count"])))
+    return strategy_dict
+
 def current_time():
     current_time = datetime.datetime.now()
     print("Date Time:%s  " % (current_time))
@@ -45,12 +58,17 @@ if __name__ == "__main__":
         strategy_list.append(Strategy(item, PERIOD_CONFIRM))
 
     while True:
+
         current_time()
         poloniexAPI.net_margin()
         print('--------------')
         # one or more strategies below
 
         for strategy in strategy_list:
+            #strategy_dict = strategy_ma(symbol, trim)
+            #trim = strategy.crossover_strategy(strategy_dict)
+
+            #WorkDetails(link, myLists)
             trim = strategy.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
             poloniexAPI.trim_position(trim, symbols)
 

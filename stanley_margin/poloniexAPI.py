@@ -122,6 +122,11 @@ def exit_sell_margin(bid, symbol):
     print("Res %s at price %f" % (res, bid))
     return res
 
+def exit_close_margin(price, symbol):
+    res = polo.closeMarginPosition(currencyPair=symbol)  # close margin trade
+    print("Res %s at price %f" % (res, price))
+    return res
+
 def get_trade_history(symbol):
     res = polo.returnTradeHistory(currencyPair=symbol, limit=1)  # close margin trade
     print("Res %s " % (res))
