@@ -19,7 +19,7 @@ def count_test(fast,mid,slow,time):
     return count
 
 def generate_fmst(f,m,s,t):
-    #print(str(f))
+    print(str(f))
     fmst = [f,f*m,f*m*s,t]
     return fmst
 
@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     while i < 3 :
         for x in test:
-            print x[1]
+            print(x)
             fmst = generate_fmst(x[0],x[1],x[2],x[3])
             print(fmst)
             profit[i] = calc_profit(fmst)

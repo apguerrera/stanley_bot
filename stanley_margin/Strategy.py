@@ -132,7 +132,7 @@ def sell_margin(bid, symbol):
     else:
         print("Res %s no value from API: %f" % (symbol, value))
         ret = 'no_amount'
-    if ret == 'success':==
+    if ret == 'success':
         print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, float(amount) * bid))
 
     #if res != 'success':
