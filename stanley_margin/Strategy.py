@@ -141,9 +141,12 @@ def sell_margin(bid, symbol):
 
 def exit_margin(price, symbol, ticket, confirm):
     if ticket < confirm:
+        print("Exit ticket: %s" % (str(ticket)))
         ticket = ticket + 1
     else:
-        poloniexAPI.exit_close_margin(price, self.SYMBOL)
+        print("Exit ticket close: %s" % (str(ticket)))
+        res = poloniexAPI.polo.closeMarginPosition(currencyPair=symbol)  # close margin trade
+        print("Res %s at price %f" % (res, price))
         ticket = 0
 
     return ticket
@@ -234,6 +237,7 @@ class Strategy:
                                 self.ticket = self.ticket + 1
                             else:
                                 margin_res = buy_margin(ask, self.SYMBOL)
+                                print("Margin Res: %s" % (margin_res))
                                 if  margin_res == "success":
                                     self.ticket = 0
                                     self.confirm = 20
@@ -265,7 +269,11 @@ class Strategy:
 
                     elif  current_margin > 0.50:
                         if fast_ma < mid_ma and abs(alt_margin) < net_margin * 0.5:
+                            if self.ticket < self.confirm:
+                                self.ticket = self.ticket + 1
+                            else:
                                 margin_res = sell_margin(bid, self.SYMBOL)
+                                print("Margin Res: %s" % (margin_res))
                                 if  margin_res == "success":
                                     self.ticket = 0
                                     self.confirm = 20
@@ -288,6 +296,7 @@ class Strategy:
                             self.ticket = self.ticket + 2
                         else:
                             margin_res = sell_margin(bid, self.SYMBOL)
+                            print("Margin Res: %s" % (margin_res))
                             if  margin_res == "success":
                                 self.ticket = 0
                                 self.confirm = 20
@@ -300,6 +309,7 @@ class Strategy:
                             self.ticket = self.ticket + 2
                         else:
                             margin_res = buy_margin(ask, self.SYMBOL)
+                            print("Margin Res: %s" % (margin_res))
                             if  margin_res == "success":
                                 self.ticket = 0
                                 self.confirm = 20
