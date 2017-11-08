@@ -210,16 +210,14 @@ class Strategy:
 
             if abs(alt_margin) > net_margin :    # max margin per coin
                 print("%s alt_converted %f greater than current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
-                poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
-                self.ticket = 0
+                self.ticket = exit_margin(ask, self.SYMBOL, 1, 1 )
 
 
             if self.is_buy_open:
                 if self.trim > 0:
                     print("%s self trim %.0f " % (self.SYMBOL, self.trim))
-                    poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
+                    self.ticket = exit_margin(ask, self.SYMBOL, 1, 1 )
                     self.trim = self.trim - 1
-                    self.ticket = 0
 
                 elif  fast_ma < mid_ma:
                     print("%s self fast_ma < mid_ma %.0f" % (self.SYMBOL, fast_ma < mid_ma ))
@@ -253,9 +251,9 @@ class Strategy:
             elif self.is_sell_open:
                 if self.trim > 0:
                     print("%s self trim %.0f " % (self.SYMBOL, self.trim))
-                    poloniexAPI.exit_buy_margin(ask, self.SYMBOL)
+                    self.ticket = exit_margin(ask, self.SYMBOL, 1, 1 )
                     self.trim = self.trim - 1
-                    self.ticket = 0
+
 
                 elif fast_ma > mid_ma:
                     print("%s self fast_ma > mid_ma %.0f" % (self.SYMBOL,fast_ma > mid_ma ))
