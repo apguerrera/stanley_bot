@@ -42,6 +42,8 @@ if __name__ == "__main__":
     parser.add_argument('--slow',  default=MA_SLOW, type=int)
     parser.add_argument('--time',  default=MA_TIME, type=int)
     parser.add_argument('--confirm',  default=CONFIRM_TIME, type=int)
+    parser.add_argument('--trim',  default=0, type=int)
+
     args = parser.parse_args()
 
     PERIOD_MA_SLOW = args.slow
@@ -49,10 +51,11 @@ if __name__ == "__main__":
     PERIOD_MA_FAST = args.fast
     PERIOD_MA_TIME = args.time
     PERIOD_CONFIRM = args.confirm
+    trim = args.trim
 
     init_strategy(PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST, PERIOD_CONFIRM)
     strategy_list = []
-    trim = 0
+
 
     for item in symbols:
         strategy_list.append(Strategy(item, PERIOD_CONFIRM))
