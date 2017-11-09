@@ -166,6 +166,7 @@ class Strategy:
         self.confirm = confirm_period
         self.initiate = 0
         self.trim = 0
+
     def crossover_strategy(self, time_period, fast_period, mid_period, slow_period, confirm_period, trim_count):
         try:
             time.sleep(0.2)
@@ -175,17 +176,23 @@ class Strategy:
             time.sleep(0.2)  # safe
             mid_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=mid_period)
             time.sleep(0.2)  # safe
-
             self.trim  = trim_count
+            exit_token = ""
 
             net_margin = poloniexAPI.get_net_margin()  # btc total value
             alt_margin = poloniexAPI.get_margin_total(self.SYMBOL)
-
             current_btc = poloniexAPI.get_btc_balance(self.SYMBOL)
             time.sleep(0.2)  # safe
+
             current_alt = poloniexAPI.get_margin_balance(self.SYMBOL)
             time.sleep(0.2)  # safe
             last_price = poloniexAPI.get_orderbook(self.SYMBOL)
+            time.sleep(0.2)  # safe
+
+            print("Symbol: %s  " % (self.SYMBOL ))
+            pl = poloniexAPI.get_pl(self.SYMBOL) #+ "%"
+            print("PL: %s  Net Margin:  %.8f" % (pl, alt_margin ))
+
             alt_converted = float(current_alt)  * float(last_price['bids'][0][0])
             ask = float(last_price['asks'][0][0])*1.005
             bid = float(last_price['bids'][0][0])*0.995
@@ -208,18 +215,28 @@ class Strategy:
             print("%s slow_ma %.8f mid_ma %.8f fast_ma %.8f" % (self.SYMBOL, slow_ma, mid_ma,fast_ma ))
 
 
-            if abs(alt_margin) > net_margin :    # max margin per coin
-                print("%s alt_converted %f greater than current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
-                self.ticket = exit_margin(ask, self.SYMBOL, 1, 1 )
 
-
-            if self.is_buy_open:
+            if self.is_buy_open or self.is_sell_open:
+                print("%s Strategy" % (self.SYMBOL))
+                if  current_margin < 0.38 :    # max margin per coin
+                    print("%s margin less than 38 percent %s " % (self.SYMBOL, str(current_margin)))
+                    exit_token = "exit"
                 if self.trim > 0:
                     print("%s self trim %.0f " % (self.SYMBOL, self.trim))
-                    self.ticket = exit_margin(ask, self.SYMBOL, 1, 1 )
                     self.trim = self.trim - 1
+                    exit_token = "exit"
+                if abs(alt_margin) > net_margin :    # max margin per coin
+                    exit_token = "exit"
+                    print("%s alt_converted %f greater than current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
 
-                elif  fast_ma < mid_ma:
+                if exit_token == "exit":
+                    self.ticket = exit_margin(ask, self.SYMBOL, 1, 1 )
+                    exit_token = " "
+                    self.is_buy_open = False
+                    self.is_sell_open = False
+
+            if self.is_buy_open:
+                if  fast_ma < mid_ma:
                     print("%s self fast_ma < mid_ma %.0f" % (self.SYMBOL, fast_ma < mid_ma ))
                     self.ticket = exit_margin(ask, self.SYMBOL, self.ticket, self.confirm )
 
@@ -249,13 +266,7 @@ class Strategy:
                     self.ticket = 0
 
             elif self.is_sell_open:
-                if self.trim > 0:
-                    print("%s self trim %.0f " % (self.SYMBOL, self.trim))
-                    self.ticket = exit_margin(ask, self.SYMBOL, 1, 1 )
-                    self.trim = self.trim - 1
-
-
-                elif fast_ma > mid_ma:
+                if fast_ma > mid_ma:
                     print("%s self fast_ma > mid_ma %.0f" % (self.SYMBOL,fast_ma > mid_ma ))
                     self.ticket = exit_margin(bid, self.SYMBOL, self.ticket, self.confirm )
 
@@ -320,7 +331,9 @@ class Strategy:
         except:
             self.ticket = 0
             print("%s error 0" % (self.SYMBOL))
+            raise
             return self.trim
+
 
         return self.trim
         #    def supertrend_strategy(self, fast_period, slow_period):

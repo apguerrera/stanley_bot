@@ -175,3 +175,12 @@ def trim_position(trim, symbols):
          for item in symbols:
              test = item.split('_')[1].lower()
          print("Trimmed position = %s Trim = %s" % (test, str(trim)))
+
+def get_pl(symbol):
+    test = polo.getMarginPosition(currencyPair=symbol)
+    if abs(float(test["total"])) == 0 :
+        ratio = 0
+    else:
+        ratio = 100 * float(test["pl"])/ abs(float(test["total"]))
+
+    return str(round(ratio))

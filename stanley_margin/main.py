@@ -61,19 +61,19 @@ if __name__ == "__main__":
         strategy_list.append(Strategy(item, PERIOD_CONFIRM))
 
     while True:
-
         current_time()
         poloniexAPI.net_margin()
         print('--------------')
-        # one or more strategies below
 
+        # one or more strategies below
         for strategy in strategy_list:
             #strategy_dict = strategy_ma(symbol, trim)
             #trim = strategy.crossover_strategy(strategy_dict)
 
             #WorkDetails(link, myLists)
             trim = strategy.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-            poloniexAPI.trim_position(trim, symbols)
+            #poloniexAPI.trim_position(trim, symbols)
+            #poloniexAPI.api_test()
 
         #test_info(SYMBOL)
         print('--------------')
