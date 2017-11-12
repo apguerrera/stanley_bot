@@ -238,13 +238,13 @@ class Strategy:
             if self.is_buy_open:
                 if  fast_ma < mid_ma:
                     print("%s self fast_ma < mid_ma %.0f" % (self.SYMBOL, fast_ma < mid_ma ))
-                    self.ticket = exit_margin(ask, self.SYMBOL, self.ticket, self.confirm )
+                    self.ticket = exit_margin(ask, self.SYMBOL, self.ticket, confirm_period )
 
                 elif fast_ma > slow_ma:
                     print("%s self fast_ma > slow_ma %.0f" % (self.SYMBOL, fast_ma > slow_ma ))
                     if  ask < slow_ma:
                         print("%s self ask < slow_ma %.0f" % (self.SYMBOL, ask < slow_ma))
-                        self.ticket = exit_margin(ask, self.SYMBOL, self.ticket, self.confirm )
+                        self.ticket = exit_margin(ask, self.SYMBOL, self.ticket, confirm_period )
 
                     elif  current_margin > 0.50:
                         if fast_ma > mid_ma and abs(alt_margin) < net_margin * 0.5:
@@ -268,13 +268,13 @@ class Strategy:
             elif self.is_sell_open:
                 if fast_ma > mid_ma:
                     print("%s self fast_ma > mid_ma %.0f" % (self.SYMBOL,fast_ma > mid_ma ))
-                    self.ticket = exit_margin(bid, self.SYMBOL, self.ticket, self.confirm )
+                    self.ticket = exit_margin(bid, self.SYMBOL, self.ticket, confirm_period)
 
                 elif fast_ma < slow_ma:
                     print("%s self fast_ma < slow_ma %.0f" % (self.SYMBOL, fast_ma < slow_ma ))
                     if bid > slow_ma:
                         print("%s self bid > slow_ma %.0f" % (self.SYMBOL, bid > slow_ma ))
-                        self.ticket = exit_margin(bid, self.SYMBOL, self.ticket, self.confirm)
+                        self.ticket = exit_margin(bid, self.SYMBOL, self.ticket, confirm_period)
 
                     elif  current_margin > 0.50:
                         if fast_ma < mid_ma and abs(alt_margin) < net_margin * 0.5:

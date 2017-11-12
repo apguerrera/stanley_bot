@@ -164,7 +164,9 @@ def test_info(symbol):
 
 
 def net_margin():
-    net_margin = get_net_margin()
+
+    balance = polo.returnMarginAccountSummary()
+    net_margin = float(balance["netValue"])
     print("Margin Balance = %s  " % (net_margin))
     current_margin = get_current_margin()
     print("Current Margin = %s" % (current_margin))
