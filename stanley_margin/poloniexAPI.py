@@ -164,11 +164,13 @@ def test_info(symbol):
 
 
 def net_margin():
-
+    time.sleep(0.2)  # safe
     balance = polo.returnMarginAccountSummary()
     net_margin = float(balance["netValue"])
     print("Margin Balance = %s  " % (net_margin))
-    current_margin = get_current_margin()
+    time.sleep(0.2)  # safe
+    balance2 = polo.returnMarginAccountSummary()
+    current_margin = float(balance2["currentMargin"])
     print("Current Margin = %s" % (current_margin))
 
 def trim_position(trim, symbols):

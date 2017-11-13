@@ -194,8 +194,8 @@ class Strategy:
             print("PL: %s  Net Margin:  %.8f" % (pl, alt_margin ))
 
             alt_converted = float(current_alt)  * float(last_price['bids'][0][0])
-            ask = float(last_price['asks'][0][0])*1.005
-            bid = float(last_price['bids'][0][0])*0.995
+            ask = float(last_price['asks'][0][0])*1.003
+            bid = float(last_price['bids'][0][0])*0.997
             current_margin = poloniexAPI.get_current_margin()  # ratio
 
             margin_type = poloniexAPI.get_margin_type(self.SYMBOL)
@@ -211,7 +211,7 @@ class Strategy:
                 self.is_sell_open = False
 
             print("%s confirm %.0f at ticket %.0f sell %.0f buy %.0f" % (self.SYMBOL, self.confirm, self.ticket, self.is_sell_open, self.is_buy_open))
-            print("%s ask %f at bid %f alt %.6f btc %.6f" % (self.SYMBOL, ask, bid, alt_converted, current_btc))
+            print("%s ask %.8f at bid %.8f alt %.6f btc %.6f" % (self.SYMBOL, ask, bid, alt_converted, current_btc))
             print("%s slow_ma %.8f mid_ma %.8f fast_ma %.8f" % (self.SYMBOL, slow_ma, mid_ma,fast_ma ))
 
 
@@ -299,7 +299,7 @@ class Strategy:
             elif self.is_sell_open is False and self.is_buy_open is False :
                 self.confirm = confirm_period
                 if current_margin > 0.42:
-                    if  bid < slow_ma and fast_ma < slow_ma and fast_ma < mid_ma: # and slow_ma <= mid_ma:
+                    if  bid < slow_ma and fast_ma < mid_ma: #  and fast_ma < slow_ma  and slow_ma <= mid_ma:
                         print("%s is_sell_open new entry" % (self.SYMBOL ))
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
@@ -312,7 +312,7 @@ class Strategy:
                             elif margin_res == "no_balance":
                                 self.trim = self.trim + 1
 
-                    elif  ask > slow_ma and fast_ma > slow_ma and fast_ma > mid_ma: # and slow_ma >= mid_ma:
+                    elif  ask > slow_ma  and fast_ma > mid_ma: # and fast_ma > slow_ma  and slow_ma >= mid_ma:
                         print("%s is_buy_open new entry" % (self.SYMBOL ))
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
