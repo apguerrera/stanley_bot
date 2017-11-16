@@ -299,7 +299,7 @@ class Strategy:
             elif self.is_sell_open is False and self.is_buy_open is False :
                 self.confirm = confirm_period
                 if current_margin > 0.42:
-                    if  bid < slow_ma and fast_ma < mid_ma: #  and fast_ma < slow_ma  and slow_ma <= mid_ma:
+                    if  bid < slow_ma and fast_ma < mid_ma and fast_ma < slow_ma : # and slow_ma <= mid_ma:
                         print("%s is_sell_open new entry" % (self.SYMBOL ))
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
@@ -312,7 +312,7 @@ class Strategy:
                             elif margin_res == "no_balance":
                                 self.trim = self.trim + 1
 
-                    elif  ask > slow_ma  and fast_ma > mid_ma: # and fast_ma > slow_ma  and slow_ma >= mid_ma:
+                    elif  ask > slow_ma  and fast_ma > mid_ma and fast_ma > slow_ma: #  and slow_ma >= mid_ma:
                         print("%s is_buy_open new entry" % (self.SYMBOL ))
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
