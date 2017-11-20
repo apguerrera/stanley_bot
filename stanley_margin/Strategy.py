@@ -170,6 +170,8 @@ class Strategy:
     def crossover_strategy(self, time_period, fast_period, mid_period, slow_period, confirm_period, trim_count):
         try:
             time.sleep(0.2)
+            price_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=3)
+            time.sleep(0.2)
             fast_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=fast_period)
             time.sleep(0.2)  # safe
             slow_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=slow_period)
@@ -212,7 +214,7 @@ class Strategy:
 
             print("%s confirm %.0f at ticket %.0f sell %.0f buy %.0f" % (self.SYMBOL, self.confirm, self.ticket, self.is_sell_open, self.is_buy_open))
             print("%s ask %.8f at bid %.8f alt %.6f btc %.6f" % (self.SYMBOL, ask, bid, alt_converted, current_btc))
-            print("%s slow_ma %.8f mid_ma %.8f fast_ma %.8f" % (self.SYMBOL, slow_ma, mid_ma,fast_ma ))
+            print("%s slow_ma %.8f mid_ma %.8f fast_ma %.8f price_ma %.8f" % (self.SYMBOL, slow_ma, mid_ma,fast_ma,price_ma ))
 
 
 
@@ -222,7 +224,7 @@ class Strategy:
                     print("%s margin less than 38 percent %s " % (self.SYMBOL, str(current_margin)))
                     exit_token = "exit"
                 if self.trim > 0:
-                    print("%s self trim %.0f " % (self.SYMBOL, self.trim))
+                    print("%s self trim > 0 %.0f " % (self.SYMBOL, self.trim))
                     self.trim = self.trim - 1
                     exit_token = "exit"
                 if abs(alt_margin) > net_margin :    # max margin per coin
@@ -236,17 +238,16 @@ class Strategy:
                     self.is_sell_open = False
 
             if self.is_buy_open:
-                if  fast_ma < mid_ma:
-                    print("%s self fast_ma < mid_ma %.0f" % (self.SYMBOL, fast_ma < mid_ma ))
+                if fast_ma < mid_ma:
+                    print("%s self fast_ma  %.6f < mid_ma %.0f" % (self.SYMBOL, fast_ma, mid_ma ))
+                    self.ticket = exit_margin(ask, self.SYMBOL, self.ticket, confirm_period )
+                elif price_ma < slow_ma:
+                    print("%s self price_ma %.6f < slow_ma %.6f  " % (self.SYMBOL, price_ma, slow_ma ))
                     self.ticket = exit_margin(ask, self.SYMBOL, self.ticket, confirm_period )
 
                 elif fast_ma > slow_ma:
-                    print("%s self fast_ma > slow_ma %.0f" % (self.SYMBOL, fast_ma > slow_ma ))
-                    if  ask < slow_ma:
-                        print("%s self ask < slow_ma %.0f" % (self.SYMBOL, ask < slow_ma))
-                        self.ticket = exit_margin(ask, self.SYMBOL, self.ticket, confirm_period )
-
-                    elif  current_margin > 0.50:
+                    print("%s self fast_ma %.6f > slow_ma %.6f" % (self.SYMBOL, fast_ma, slow_ma ))
+                    if current_margin > 0.50:
                         if fast_ma > mid_ma and abs(alt_margin) < net_margin * 0.5:
                             if self.ticket < self.confirm:
                                 self.ticket = self.ticket + 1
@@ -267,16 +268,15 @@ class Strategy:
 
             elif self.is_sell_open:
                 if fast_ma > mid_ma:
-                    print("%s self fast_ma > mid_ma %.0f" % (self.SYMBOL,fast_ma > mid_ma ))
+                    print("%s self fast_ma %.6f > mid_ma %.6f" % (self.SYMBOL,fast_ma, mid_ma ))
+                    self.ticket = exit_margin(bid, self.SYMBOL, self.ticket, confirm_period)
+                elif price_ma > slow_ma:
+                    print("%s self price_ma > slow_ma %.6f > %.6f  " % (self.SYMBOL, price_ma, slow_ma ))
                     self.ticket = exit_margin(bid, self.SYMBOL, self.ticket, confirm_period)
 
                 elif fast_ma < slow_ma:
-                    print("%s self fast_ma < slow_ma %.0f" % (self.SYMBOL, fast_ma < slow_ma ))
-                    if bid > slow_ma:
-                        print("%s self bid > slow_ma %.0f" % (self.SYMBOL, bid > slow_ma ))
-                        self.ticket = exit_margin(bid, self.SYMBOL, self.ticket, confirm_period)
-
-                    elif  current_margin > 0.50:
+                    print("%s self fast_ma %.6f < slow_ma %.6f" % (self.SYMBOL, fast_ma, slow_ma ))
+                    if  current_margin > 0.50:
                         if fast_ma < mid_ma and abs(alt_margin) < net_margin * 0.5:
                             if self.ticket < self.confirm:
                                 self.ticket = self.ticket + 1
@@ -299,7 +299,7 @@ class Strategy:
             elif self.is_sell_open is False and self.is_buy_open is False :
                 self.confirm = confirm_period
                 if current_margin > 0.42:
-                    if  bid < slow_ma and fast_ma < mid_ma and fast_ma < slow_ma : # and slow_ma <= mid_ma:
+                    if  fast_ma < mid_ma and price_ma < slow_ma : # and slow_ma <= mid_ma:
                         print("%s is_sell_open new entry" % (self.SYMBOL ))
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
@@ -312,7 +312,7 @@ class Strategy:
                             elif margin_res == "no_balance":
                                 self.trim = self.trim + 1
 
-                    elif  ask > slow_ma  and fast_ma > mid_ma and fast_ma > slow_ma: #  and slow_ma >= mid_ma:
+                    elif  fast_ma > mid_ma and price_ma > slow_ma: #  and slow_ma >= mid_ma:
                         print("%s is_buy_open new entry" % (self.SYMBOL ))
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 2
