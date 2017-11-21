@@ -8,7 +8,7 @@ import argparse
 
 MA_SLOW = 120
 MA_MID = 30
-MA_FAST = 10
+MA_FAST = 15
 MA_TIME = 120
 CONFIRM_TIME = 3
 

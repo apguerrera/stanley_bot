@@ -1,6 +1,7 @@
 import requests
 import time
-import poloniex  # pip3 install https://github.com/s4w3d0ff/python-poloniex/archive/v0.4.3.zip
+
+import poloniex  # pip3 install https://github.com/s4w3d0ff/python-poloniex/archive/v0.4.6.zip
 
 from passwords import PRIVATE_API_KEY, PRIVATE_SECRET_KEY
 from collections import defaultdict
@@ -90,10 +91,14 @@ def get_btc_balance(symbol):
 def get_margin_type(symbol):
     margin = polo.getMarginPosition(currencyPair=symbol)
     margin_type = margin["type"]
-    print("Margin for %s with position %s" % (symbol, margin_type))
+    if margin_type != "none":
+        print("Margin for %s with position %s" % (symbol, margin_type.upper() ))
+    else:
+        print("Margin for %s with position %s" % (symbol, margin_type))
 
     #print("Margin for %s with total %f" % (symbol, margin_total))
     #print("I have %s %s symbol!" % ( balance, symbol))
+
     return margin_type
     #return margin
 
@@ -101,8 +106,8 @@ def get_margin_balance(symbol):
     coin =  symbol.replace("BTC_", "")
     balance = polo.returnTradableBalances()
     coin_balance = float(balance[symbol][coin])
-    relative_balance = coin_balance*0.90  # 2= 50% of current balance
-    print("My malt trade balance = %s at price %f" % (coin, coin_balance))
+    relative_balance = coin_balance*0.95  # 2= 50% of current balance
+    #print("My malt trade balance = %s at price %f" % (coin, coin_balance))
     #print("I have %s %s symbol!" % ( balance, symbol))
     return float(relative_balance)
 
@@ -135,8 +140,10 @@ def get_trade_history(symbol):
 def get_margin_total(symbol):
     margin = polo.getMarginPosition(currencyPair=symbol)
     margin_total = float(margin["total"])
-    print("%s with total %f" % (symbol, margin_total))
+    #print("%s with total %f" % (symbol, margin_total))
+    print("%s Total %.0f Amount %.2f Base %.8f " % (symbol, margin_total, float(margin["amount"]), float(margin["basePrice"]) ))
 
+    #{"amount":"40.94717831","total":"-0.09671314",""basePrice":"0.00236190","liquidationPrice":-1,"pl":"-0.00058655", "lendingFees":"-0.00000038","type":"long"}
     return margin_total
     #return margin
 
@@ -161,17 +168,15 @@ def test_info(symbol):
 
     print( str(symbol)+':' + str(c) +' - ' + str(PERIOD_MA_SLOW) + ' ma = ' + str(slow_ma) + ' - ' + str(PERIOD_MA_FAST) + ' ma = ' + str(fast_ma))
 
-
-
 def net_margin():
     time.sleep(0.2)  # safe
     balance = polo.returnMarginAccountSummary()
     net_margin = float(balance["netValue"])
-    print("Margin Balance = %s  " % (net_margin))
+    print("Margin Balance = %.5f  " % (net_margin))
     time.sleep(0.2)  # safe
     balance2 = polo.returnMarginAccountSummary()
-    current_margin = float(balance2["currentMargin"])
-    print("Current Margin = %s" % (current_margin))
+    current_margin = 100 * float(balance2["currentMargin"])
+    print("Current Margin = %.2f %s " % (current_margin, "%"))
 
 def trim_position(trim, symbols):
      if trim > 0:
@@ -187,4 +192,6 @@ def get_pl(symbol):
     else:
         ratio = 100 * float(test["pl"])/ abs(float(test["total"]))
 
-    return str(round(ratio))
+    print("PL: %s Margin: %.8f Profit: %.6f" % (str(round(ratio)), float(test["total"]), float(test["pl"]) ))
+
+    return ratio
