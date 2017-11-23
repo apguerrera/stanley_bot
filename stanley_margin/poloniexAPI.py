@@ -192,6 +192,6 @@ def get_pl(symbol):
     else:
         ratio = 100 * float(test["pl"])/ abs(float(test["total"]))
 
-    print("PL: %s Margin: %.8f Profit: %.6f" % (str(round(ratio)), float(test["total"]), float(test["pl"]) ))
+    print("PL: %.2f Margin: %.8f Profit: %.6f" % (float(ratio), float(test["total"]), float(test["pl"]) ))
 
     return ratio

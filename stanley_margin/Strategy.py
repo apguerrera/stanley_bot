@@ -194,6 +194,9 @@ class Strategy:
 
             pl = poloniexAPI.get_pl(self.SYMBOL) #+ "%"
 
+            print("%s profit and loss %s " % (self.SYMBOL, str(pl)))
+
+
             alt_converted = float(current_alt)  * float(last_price['bids'][0][0])
             ask = float(last_price['asks'][0][0])*1.003
             bid = float(last_price['bids'][0][0])*0.997
