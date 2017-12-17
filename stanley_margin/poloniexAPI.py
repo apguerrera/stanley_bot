@@ -57,9 +57,40 @@ def get_ma(symbol, timeframe, period, source='close'):
             s += float(item[source])
             c += 1
 
+
     return s / period
 
 
+
+def get_ma_fms(symbol, timeframe, slow_period, mid_period, fast_period, source='close'):
+    """
+    Calculate moving average (default by Close). Returns Moving Average value
+    :param symbol:
+    :param timeframe: Bars timeframe (5,15,30, etc)
+    :param period:
+    :param source: Default calculate MA by Close. Select Open, High, Close of Low.
+    :return: Moving Average value
+    """
+    c = 0
+    while (c < slow_period):
+        s = 0
+        m = 0
+        f = 0
+        c = 0
+        data = get_chart_data(symbol, timeframe, period)
+
+        for item in data:
+            s += float(item[source])
+            if (c < mid_period):
+                m += float(item[source])
+            if (c < fast_period):
+                f += float(item[source])
+            c += 1
+
+    slow_ma = s / slow_period
+    mid_ma = m / mid_period
+    fast_ma = f / fast_period
+    return slow_ma, mid_ma, fast_ma
 
 def sell_margin_api(symbol, bid, amount):
     res = polo.marginSell(symbol, rate=bid, amount=amount, lendingRate=0.02)  # if you want margin trade

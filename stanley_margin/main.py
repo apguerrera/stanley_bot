@@ -64,7 +64,12 @@ if __name__ == "__main__":
 
     while True:
         current_time()
-        poloniexAPI.net_margin()
+        time.sleep(0.4)
+        try:
+            poloniexAPI.net_margin()
+        except:
+            print('--------Net Magin Error ------')
+
         print('--------------')
 
         # one or more strategies below
