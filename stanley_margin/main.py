@@ -6,10 +6,10 @@ import argparse
 
 # region ### GLOBALS
 
-MA_SLOW = 120
-MA_MID = 30
-MA_FAST = 15
-MA_TIME = 120
+MA_SLOW = 200   # 120
+MA_MID = 50     # 30
+MA_FAST = 20    # 15
+MA_TIME = 30
 CONFIRM_TIME = 3
 
 #symbols = ['BTC_LTC', 'BTC_XRP', 'BTC_ETH','BTC_FCT','BTC_BTS','BTC_XMR','BTC_DASH','BTC_MAID','BTC_CLAM', 'BTC_STR' ]
@@ -45,6 +45,8 @@ if __name__ == "__main__":
     parser.add_argument('--time',  default=MA_TIME, type=int)
     parser.add_argument('--confirm',  default=CONFIRM_TIME, type=int)
     parser.add_argument('--trim',  default=0, type=int)
+    parser.add_argument('--kill',  default='null', type=str)
+
 
     args = parser.parse_args()
 
@@ -54,6 +56,20 @@ if __name__ == "__main__":
     PERIOD_MA_TIME = args.time
     PERIOD_CONFIRM = args.confirm
     trim = args.trim
+    kill_symbol = args.kill
+
+    if any(kill_symbol in s for s in symbols):
+        matching = [s for s in symbols if kill_symbol in s]
+        for symbol in matching :
+            print("Kill ticket close: %s" % (str(symbol)))
+            res = poloniexAPI.polo.closeMarginPosition(currencyPair=symbol)  # close margin trade
+            print("Res %s" % (res))
+    elif kill_symbol.lower() == "all":
+        for symbol in symbols :
+            print("Kill ticket close: %s" % (str(symbol)))
+            res = poloniexAPI.polo.closeMarginPosition(currencyPair=symbol)  # close margin trade
+            print("Res %s" % (res))
+            time.sleep(10)
 
     init_strategy(PERIOD_MA_TIME, PERIOD_MA_SLOW, PERIOD_MA_MID, PERIOD_MA_FAST, PERIOD_CONFIRM)
     strategy_list = []
@@ -67,22 +83,20 @@ if __name__ == "__main__":
         time.sleep(0.4)
         try:
             poloniexAPI.net_margin()
+            print('--------------')
+
+            # one or more strategies below
+            for strategy in strategy_list:
+                #strategy_dict = strategy_ma(symbol, trim)
+                #trim = strategy.crossover_strategy(strategy_dict)
+
+                #WorkDetails(link, myLists)
+                trim = strategy.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
+                #poloniexAPI.trim_position(trim, symbols)
+                #poloniexAPI.api_test()
+
         except:
-            print('--------Net Magin Error ------')
+            print('Kill on exit main')
 
         print('--------------')
-
-        # one or more strategies below
-        for strategy in strategy_list:
-            #strategy_dict = strategy_ma(symbol, trim)
-            #trim = strategy.crossover_strategy(strategy_dict)
-
-            #WorkDetails(link, myLists)
-            trim = strategy.crossover_strategy(time_period=PERIOD_MA_TIME,fast_period=PERIOD_MA_FAST, mid_period=PERIOD_MA_MID,slow_period=PERIOD_MA_SLOW, confirm_period=PERIOD_CONFIRM, trim_count=trim)
-            #poloniexAPI.trim_position(trim, symbols)
-            #poloniexAPI.api_test()
-
-        #test_info(SYMBOL)
-        print('--------------')
-
         time.sleep(5)
