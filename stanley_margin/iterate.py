@@ -56,8 +56,14 @@ if __name__ == "__main__":
     current_time = datetime.datetime.now()
     print("Date Time:%s  " % (current_time))
     print("Test count:%s  " % (test_count))
+    #print("Test:%s  " % (test.head()))
+
+    fmst = generate_fmst(2,3,4,5)
+    print("Test:%s  " % (test))
 
     while i < 3 :
+        print("i :%s  " % (i))
+
         for x in test:
             print(x)
             fmst = generate_fmst(x[0],x[1],x[2],x[3])
