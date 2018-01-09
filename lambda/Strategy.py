@@ -9,7 +9,7 @@ def calc_margin_alt(price, symbol):
     coin =  symbol.replace("BTC_", "")
     coin_balance = float(current_balance[symbol][coin])
     relative_balance = coin_balance*0.95  # 95% of current balance for buffer
-    print("My malt margin balancse = %s at price %f" % (relative_balance, price))
+    print("My malt margin balance = %s at price %f" % (relative_balance, price))
 
     amount = relative_balance
     return amount
@@ -28,33 +28,46 @@ def calc_margin_btc(price, symbol):
 def buy_margin_amount(ask, symbol, amount):
     value = float(amount) * ask
     print("Buy %s Amount = %s at price %f, value %f" % (symbol, amount, ask, value))
+
     if value > 0.02:  # enough margin to place a trade
         amount = amount * factor
         res = poloniexAPI.polo.marginBuy(symbol, ask, amount, lendingRate=0.02)  # if you want margin trade
         print("Res %s at price %f" % (res, ask))
         ret = 'success'
+
     elif value < 0.02:
         print("Res %s not enough margin: %f" % (symbol, value))
         ret = 'no_margin'
+
+    #if res != 'success':
+    #    raise BaseException('### Trade Buy error')
     return ret
 
+
 def sell_margin_amount(bid, symbol, amount):
+
+    #amount = calc_margin_alt(bid, symbol)
     value = float(amount) * bid
+    #factor = 0.2
     print("Sell %s Amount = %s at price %f, value %f" % (symbol, amount, bid, value))
-    if value > 0.02:  # enough margin to place a trade
+
+    if value > 0.02:
         res = poloniexAPI.polo.marginSell(symbol, bid, amount, lendingRate=0.02)  # if you want margin trade
         print("Res %s at price %f" % (res, bid))
         ret = 'success'
     elif value < 0.02:
         print("Res %s not enough margin: %f" % (symbol, value))
         ret = 'no_margin'
+     # fix it when uncomment!
+    #if res != 'success':
+    #    raise BaseException('### Trade Sell error')
     return ret
 
 
 def buy_margin(ask, symbol):
     amount = calc_margin_btc(ask, symbol)
     value = float(amount) * ask
-    factor = 0.05  # percentage of total margin avaliable to use on this trade
+    factor = 0.10  # percentage of total margin avaliable to use on this trade
     print("Buy %s amount = %s at price %f, value %f" % (symbol, amount, ask, value))
 
     if value > 0.02:  # enough margin to place a trade
@@ -91,7 +104,7 @@ def buy_margin(ask, symbol):
 def sell_margin(bid, symbol):
     amount = calc_margin_btc(bid, symbol)
     value = float(amount) * bid
-    factor = 0.05  # percentage of total margin avaliable to use on this trade
+    factor = 0.10  # percentage of total margin avaliable to use on this trade
     print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
 
     if value > 0.02:  # enough margin to place a trade
@@ -153,7 +166,6 @@ class Strategy:
         self.confirm = confirm_period
         self.initiate = 0
         self.trim = 0
-        self.dont_trade = "none"
 
     def crossover_strategy(self, time_period, fast_period, mid_period, slow_period, confirm_period, trim_count):
         try:
@@ -180,7 +192,7 @@ class Strategy:
             last_price = poloniexAPI.get_orderbook(self.SYMBOL)
             time.sleep(0.2)  # safe
 
-            pl = poloniexAPI.get_pl(self.SYMBOL)
+            pl = poloniexAPI.get_pl(self.SYMBOL) #+ "%"
 
             print("%s profit and loss %s " % (self.SYMBOL, str(pl)))
 
@@ -207,126 +219,116 @@ class Strategy:
             print("slow_ma  %.8f \nmid_ma   %.8f \nfast_ma  %.8f \nprice_ma %.8f" % ( slow_ma, mid_ma,fast_ma,price_ma ))
 
 
-            if self.is_buy_open or self.is_sell_open:  # if open position
+
+            if self.is_buy_open or self.is_sell_open:
                 #print("%s Strategy" % (self.SYMBOL))
-                if  current_margin < 0.38 :    # if current trades less than minimum desired 38 percent margin
+                if  current_margin < 0.38 :    # max margin per coin
                     print("%s margin less than 38 percent %s " % (self.SYMBOL, str(current_margin)))
-                    if pl < -5:
-                        if self.is_buy_open:
-                            self.dont_trade = "buy"
-                        if self.is_sell_open:
-                            self.dont_trade = "sell"
-                        exit_token = "exit"
-                if self.trim > 0:   # if the trim trigger is true then close position
+                    exit_token = "exit"
+                if self.trim > 0:
                     print("%s self trim > 0 %.0f " % (self.SYMBOL, self.trim))
-                    if pl < -5:
-                        if self.is_buy_open:
-                            self.dont_trade = "buy"
-                        if self.is_sell_open:
-                            self.dont_trade = "sell"
-                        exit_token = "exit"
-                if abs(alt_margin) > net_margin :    # max margin per coin
+                    self.trim = 0
                     #exit_token = "exit"
+                if abs(alt_margin) > net_margin :    # max margin per coin
+                    exit_token = "exit"
                     print("%s alt_converted %f greater than current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
 
-            # if long position
+                if exit_token == "exit":
+                    self.ticket = exit_margin(ask, self.SYMBOL, 1, 1 )
+                    exit_token = " "
+                    self.is_buy_open = False
+                    self.is_sell_open = False
+
             if self.is_buy_open:
-                price = ask
                 if fast_ma < mid_ma:
                     print("%s self fast_ma < mid_ma" % (self.SYMBOL))
-                    exit_token = "slow_exit"
+                    self.ticket = exit_margin(ask, self.SYMBOL, self.ticket, confirm_period )
                 elif price_ma < slow_ma:
                     print("%s self price_ma < slow_ma " % (self.SYMBOL))
-                    exit_token = "slow_exit"
-                elif fast_ma > slow_ma and fast_ma > mid_ma:
-                    print("%s self fast_ma > slow_ma " % (self.SYMBOL ))
-                    exit_token = "topup"
+                    self.ticket = exit_margin(ask, self.SYMBOL, self.ticket, confirm_period )
 
-            # if short position
+                elif fast_ma > slow_ma:
+                    print("%s self fast_ma > slow_ma " % (self.SYMBOL ))
+                    if current_margin > 0.50:
+                        if fast_ma > mid_ma and abs(alt_margin) < net_margin * 0.5:
+                            if self.ticket < self.confirm:
+                                self.ticket = self.ticket + 1
+                            else:
+                                margin_res = buy_margin(ask, self.SYMBOL)
+                                print("Margin Res: %s" % (margin_res))
+                                if  margin_res == "success":
+                                    self.ticket = 0
+                                    self.confirm = 20
+                                elif margin_res == "no_balance":
+                                    self.trim = self.trim + 1
+                        else:
+                            print("%s alt_converted %f greater than half current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
+                            self.ticket = 0
+                else:
+                    print("%s self ticket %.0f " % (self.SYMBOL, self.ticket))
+                    self.ticket = 0
+
             elif self.is_sell_open:
-                price = bid
                 if fast_ma > mid_ma:
                     print("%s self fast_ma > mid_ma" % (self.SYMBOL))
-                    exit_token = "slow_exit"
-                elif price_ma > slow_ma:     # exit on reversal
-                    print("%s self price_ma > slow_ma " % (self.SYMBOL))
-                    exit_token = "slow_exit"
-                elif fast_ma < slow_ma and fast_ma < mid_ma:  # top up if successful
-                    print("%s self fast_ma < mid_ma < slow_ma " % (self.SYMBOL ))
-                    exit_token = "topup"
+                    self.ticket = exit_margin(bid, self.SYMBOL, self.ticket, confirm_period)
+                elif price_ma > slow_ma:
+                    print("%s self price_ma > slow_ma  " % (self.SYMBOL ))
+                    self.ticket = exit_margin(bid, self.SYMBOL, self.ticket, confirm_period)
 
-            # New trades signals if no positions are open
+                elif fast_ma < slow_ma:
+                    print("%s self fast_ma < slow_ma" % (self.SYMBOL ))
+                    if  current_margin > 0.50:
+                        if fast_ma < mid_ma and abs(alt_margin) < net_margin * 0.5:
+                            if self.ticket < self.confirm:
+                                self.ticket = self.ticket + 1
+                            else:
+                                margin_res = sell_margin(bid, self.SYMBOL)
+                                print("Margin Res: %s" % (margin_res))
+                                if  margin_res == "success":
+                                    self.ticket = 0
+                                    self.confirm = 20
+                                elif margin_res == "no_balance":
+                                    self.trim = self.trim + 1
+                        else:
+                            print("%s alt_converted %f greater than half current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
+                            self.ticket = 0
+                else:
+                    print("%s self ticket %.0f " % (self.SYMBOL, self.ticket))
+                    self.ticket = 0
+
+
             elif self.is_sell_open is False and self.is_buy_open is False :
                 self.confirm = confirm_period
-                if current_margin > 0.42:     # if there is margin to spend
-                    if  fast_ma < mid_ma and price_ma < slow_ma and price_ma < fast_ma: # and slow_ma <= mid_ma:
-                        if self.dont_trade != "sell":
-                            print("%s is_sell_open new entry" % (self.SYMBOL ))
-                            exit_token = "new_sell"
-                        else:
-                            print("%s is flagged dont_trade %.0f" % (self.SYMBOL, self.dont_trade ))
-                    elif  fast_ma > mid_ma and price_ma > slow_ma and price_ma > fast_ma: #  and slow_ma >= mid_ma:
-                        if self.dont_trade != "buy":
-                            print("%s is_buy_open new entry" % (self.SYMBOL ))
-                            exit_token = "new_buy"
-
-            # execute trades
-            if exit_token == "exit":   # exit open trade
-                self.ticket = exit_margin(ask, self.SYMBOL, 1, 1 )
-                exit_token = " "
-                self.is_buy_open = False
-                self.is_sell_open = False
-                self.trim = 0
-
-            # exit after confirmation
-            elif exit_token == "slow_exit":
-                if self.ticket < self.confirm:
-                    self.ticket = self.ticket + 1
-                else:
-                    self.ticket = exit_margin(price, self.SYMBOL, self.ticket, confirm_period)
-                    self.trim = 0
-
-            # new trade signals
-            elif exit_token == "new_buy" or exit_token == "new_sell":
-                print("%s exit_token is %s" % (self.SYMBOL, exit_token))
-                if self.ticket < self.confirm:
-                    self.ticket = self.ticket + 2
-                else:
-                    if exit_token == "new_buy":
-                        margin_res = buy_margin(ask, self.SYMBOL)
-                    elif exit_token == "new_sell":
-                        margin_res = sell_margin(bid, self.SYMBOL)
-                    print("Margin Res: %s" % (margin_res))
-                    if  margin_res == "success":
-                        self.ticket = 0
-                        self.confirm = 20
-                        self.dont_trade = "none"
-                    elif margin_res == "no_balance":
-                        self.trim = self.trim + 1
-
-            # top up successful trades
-            elif exit_token == "topup":
-                if current_margin > 0.60 and pl > 3:  # have margin to spend and trade is profitable
-                    if abs(alt_margin) < net_margin * 0.5:  # one position not more than 50% margin
+                if current_margin > 0.42:
+                    if  fast_ma < mid_ma and price_ma < slow_ma : # and slow_ma <= mid_ma:
+                        print("%s is_sell_open new entry" % (self.SYMBOL ))
                         if self.ticket < self.confirm:
-                            self.ticket = self.ticket + 1
+                            self.ticket = self.ticket + 2
                         else:
-                            if self.is_buy_open:
-                                margin_res = buy_margin(ask, self.SYMBOL)
-                            elif self.is_sell_open:
-                                margin_res = sell_margin(bid, self.SYMBOL)
+                            margin_res = sell_margin(bid, self.SYMBOL)
                             print("Margin Res: %s" % (margin_res))
                             if  margin_res == "success":
                                 self.ticket = 0
                                 self.confirm = 20
                             elif margin_res == "no_balance":
-                                self.trim = 1
+                                self.trim = self.trim + 1
+
+                    elif  fast_ma > mid_ma and price_ma > slow_ma: #  and slow_ma >= mid_ma:
+                        print("%s is_buy_open new entry" % (self.SYMBOL ))
+                        if self.ticket < self.confirm:
+                            self.ticket = self.ticket + 2
+                        else:
+                            margin_res = buy_margin(ask, self.SYMBOL)
+                            print("Margin Res: %s" % (margin_res))
+                            if  margin_res == "success":
+                                self.ticket = 0
+                                self.confirm = 20
+                            elif margin_res == "no_balance":
+                                self.trim = self.trim + 1
                     else:
-                        print("%s alt_converted %f greater than half current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
+                        #print("%s no trade Ticket %.0f " % (self.SYMBOL, self.ticket))
                         self.ticket = 0
-                else:
-                    #print("%s P and L %f less than 3 percent and margin %f" % (self.SYMBOL, pl, current_margin))
-                    self.ticket = 0
 
         except:
             self.ticket = 0
