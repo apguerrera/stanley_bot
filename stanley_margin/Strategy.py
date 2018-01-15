@@ -97,22 +97,16 @@ def sell_margin(bid, symbol):
     if value > 0.02:  # enough margin to place a trade
         if value * factor > 0.02:  # trade a fraction of available funds
             amount = amount * factor
-            res = poloniexAPI.sell_margin_api(symbol=symbol, bid=bid, amount=amount)  # if you want margin trade
-            print("Res %s at price %f" % (res, bid))
-            ret = 'success'
-        elif value * factor * 3 > 0.02:  # trade with remaining margin available > 0.02 btc
+        elif value * factor * 3 > 0.02:  # trade with remaining margin available
             amount = amount * factor * 3
-            res = poloniexAPI.sell_margin_api(symbol=symbol, bid=bid, amount=amount)  # if you want margin trade
-            print("Res %s at price %f" % (res, bid))
-            ret = 'success'
-        elif value * factor * 6 > 0.02:  # trade with remaining margin available > 0.02 btc
+        elif value * factor * 6 > 0.02:  # trade with remaining margin available
             amount = amount * factor * 6
-            res = poloniexAPI.sell_margin_api(symbol=symbol, bid=bid, amount=amount)  # if you want margin trade
-            print("Res %s at price %f" % (res, bid))
-            ret = 'success'
         else:
             print("Res %s not enough margin: %f" % (symbol, value))
             ret = 'no_margin'
+        res = poloniexAPI.sell_margin_api(symbol=symbol, bid=bid, amount=amount)  # if you want margin trade
+        print("Res %s at price %f" % (res, bid))
+        ret = 'success'
     elif value < 0.02:
         print("Res %s not enough margin balance: %f" % (symbol, value))
         ret = 'no_balance'
