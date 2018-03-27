@@ -235,46 +235,54 @@ class Strategy:
             elif self.is_sell_open is False and self.is_buy_open is False :
                 self.confirm = confirm_period
                 if current_margin > 0.42:
-                    if  fast_ma < mid_ma and price_ma < slow_ma and price_ma < fast_ma: # and slow_ma <= mid_ma:
+                    if  fast_ma < (0.999 * mid_ma) and price_ma < slow_ma and price_ma < mid_ma and price_ma < fast_ma: # and slow_ma <= mid_ma:
                         if self.dont_trade != "sell":
                             print("%s is_sell_open new entry" % (self.SYMBOL ))
                             exit_token = "new_sell"
                         else:
-                            print("%s is flagged dont_trade %.0f" % (self.SYMBOL, self.dont_trade ))
-                    elif  fast_ma > mid_ma and price_ma > slow_ma and price_ma > fast_ma: #  and slow_ma >= mid_ma:
+                            print("%s is flagged dont_trade %s" % (self.SYMBOL, self.dont_trade ))
+                    elif  fast_ma > (1.001 * mid_ma) and price_ma > slow_ma and price_ma > mid_ma and price_ma > fast_ma: #  and slow_ma >= mid_ma:
                         if self.dont_trade != "buy":
                             print("%s is_buy_open new entry" % (self.SYMBOL ))
                             exit_token = "new_buy"
 
             if self.is_buy_open or self.is_sell_open:  # if open position
                 #print("%s Strategy" % (self.SYMBOL))
-                if  current_margin < 0.35 :    # if current trades less than minimum desired 38 percent margin
+                if  current_margin < 0.38 :    # if current trades less than minimum desired 38 percent margin
                     print("%s margin less than 38 percent %s " % (self.SYMBOL, str(current_margin)))
-                    if pl < -5:
+                    if pl < -2:
                         if self.is_buy_open:
                             self.dont_trade = "buy"
                         if self.is_sell_open:
                             self.dont_trade = "sell"
                         exit_token = "exit"
-                        print("%s fast exit" % (self.SYMBOL))
+                        print("%s fast exit < 2pc" % (self.SYMBOL))
 
                     else:
                         exit_token = "slow_exit"
-                        print("%s slow exit" % (self.SYMBOL))
+                        print("%s slow exit < 38pc margin" % (self.SYMBOL))
+
+                if pl < -5:
+                    if self.is_buy_open:
+                        self.dont_trade = "buy"
+                    if self.is_sell_open:
+                        self.dont_trade = "sell"
+                    exit_token = "slow_exit"
+                    print("%s fast exit < 5pc " % (self.SYMBOL))
 
                 if self.trim > 0:   # if the trim trigger is true then close position
                     print("%s self trim > 0 %.0f " % (self.SYMBOL, self.trim))
-                    if pl < -5:
+                    if pl < -2:
                         if self.is_buy_open:
                             self.dont_trade = "buy"
                         if self.is_sell_open:
                             self.dont_trade = "sell"
                         exit_token = "exit"
+                        print("%s exit_token %s" % (self.SYMBOL, exit_token))
+
                 if abs(alt_margin) > net_margin :    # max margin per coin
                     #exit_token = "exit"
                     print("%s alt_converted %f greater than current_margin %f" % (self.SYMBOL, alt_margin, net_margin))
-
-            print("%s exit_token %s" % (self.SYMBOL, exit_token))
 
             # execute trades
             if exit_token == "exit":
@@ -285,7 +293,7 @@ class Strategy:
                 self.trim = 0
 
             elif exit_token == "slow_exit":
-                if self.ticket < self.confirm:
+                if self.ticket < confirm_period:
                     self.ticket = self.ticket + 1
                 else:
                     self.ticket = exit_margin(price, self.SYMBOL, self.ticket, confirm_period)
@@ -309,7 +317,7 @@ class Strategy:
                         self.trim = 1
 
             elif exit_token == "topup":
-                if current_margin > 0.45 and pl > 3:  # have margin to spend and trade is profitable
+                if current_margin > 0.60 and pl > 3:  # have margin to spend and trade is profitable
                     if abs(alt_margin) < net_margin * 0.5:  # one position not more than 50% margin
                         if self.ticket < self.confirm:
                             self.ticket = self.ticket + 1

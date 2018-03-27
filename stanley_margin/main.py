@@ -14,20 +14,20 @@ CONFIRM_TIME = 3
 
 #symbols = ['BTC_LTC', 'BTC_XRP', 'BTC_ETH','BTC_FCT','BTC_BTS','BTC_XMR','BTC_DASH','BTC_MAID','BTC_CLAM', 'BTC_STR' ]
 
-symbol_parm = { "BTC_LTC": [200, 50, 16, 120]
-            #, "BTC_XRP": [110, 30, 10, 120] # 20171228
-        #, "BTC_XRP": [110, 25, 10, 30]
-
-            , "BTC_ETH": [150, 45, 12, 120]
+symbol_parm = {
+            "BTC_XRP": [110, 30, 10, 120] # 20171228
+            #"BTC_XRP": [60, 30, 10, 30]
+            , "BTC_LTC": [200, 50, 16, 120]
+            , "BTC_ETH": [110, 35, 12, 120]
             , "BTC_FCT": [140, 50, 14, 120]
-            #, "BTC_STR": [250, 55, 20, 120]
-            , "BTC_STR": [120, 30, 15, 30]
+            , "BTC_STR": [250, 55, 20, 120]
+            #, "BTC_STR": [120, 30, 15, 30]
 
-            , "BTC_MAID": [200, 60, 15, 120]
+            , "BTC_MAID": [120, 60, 15, 120]
             #, "BTC_XMR": [220, 100, 20, 120]
-            #, "BTC_XMR": [180, 60, 18, 120]
+            , "BTC_XMR": [180, 60, 18, 120]
 
-            #, "BTC_BTS": [MA_SLOW, MA_MID, MA_FAST, MA_TIME]
+            , "BTC_BTS": [90, 30, 15, 120]
             #, "BTC_DASH": [MA_SLOW, MA_MID, MA_FAST, MA_TIME]
             , "BTC_CLAM": [140, 70, 18, 120]
             #, "BTC_DOGE": [MA_SLOW, MA_MID, MA_FAST, MA_TIME]
@@ -91,11 +91,11 @@ if __name__ == "__main__":
 
     while True:
         current_time()
-        time.sleep(0.2)
+        time.sleep(2)
         try:
             poloniexAPI.net_margin()
             print('--------------')
-
+            time.sleep(10)
             # one or more strategies below
             for strategy in strategy_list:
                 #strategy_dict = strategy_ma(symbol, trim)
@@ -111,9 +111,11 @@ if __name__ == "__main__":
                     , trim_count=trim)
                 #poloniexAPI.trim_position(trim, symbols)
                 #poloniexAPI.api_test()
+                print('---')
+                time.sleep(1)
+
 
         except:
             print('Kill on exit main')
 
         print('--------------')
-        time.sleep(2)
