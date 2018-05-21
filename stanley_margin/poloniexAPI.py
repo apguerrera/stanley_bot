@@ -1,7 +1,7 @@
 import requests
 import time
 
-import poloniex  # pip3 install https://github.com/s4w3d0ff/python-poloniex/archive/v0.4.6.zip
+import poloniex  # pip/ pip3 install https://github.com/s4w3d0ff/python-poloniex/archive/v0.4.6.zip
 
 from passwords import PRIVATE_API_KEY, PRIVATE_SECRET_KEY
 from collections import defaultdict
@@ -11,10 +11,12 @@ secret_key = PRIVATE_SECRET_KEY
 
 polo = poloniex.Poloniex(api_key, secret_key)
 
+#print(": %s  " % (polo))
 
 # ### Methods
 def get_orderbook(symbol='BTC_ETH'):
-    r = requests.get('https://poloniex.com/public?command=returnOrderBook&currencyPair=' + symbol + '&depth=1')
+    u_a = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.82 Safari/537.36"
+    r = requests.get('https://poloniex.com/public?command=returnOrderBook&currencyPair=' + symbol + '&depth=1', headers={"USER-AGENT":u_a})
     return r.json()
 
 
