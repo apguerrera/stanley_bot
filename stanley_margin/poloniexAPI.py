@@ -33,10 +33,13 @@ def get_chart_data(symbol='BTC_ETH', timeframe=5, period=120):
     req = 'https://poloniex.com/public?command=returnChartData&currencyPair=' \
           + symbol + '&start=' + str(start_time) \
           + '&end=9999999999&period=' + str(timeframe_seconds)
-    r = requests.get(req)
-    res = r.json()
-    if 'error' in res:
+    try:
+        r = requests.get(req)
+        res = r.json()
+    except:
         raise ValueError(str(res) + ' e.g. 5,15,30,60 etc...')
+        return res
+
     return res
 
 
@@ -181,6 +184,7 @@ def get_margin_total(symbol):
     #return margin
 
 def get_net_margin():
+    #print("My net balance calculating")
     balance = polo.returnMarginAccountSummary()
     #print("My net balance = %s" % (balance["netValue"]))
     #print("I have %s %s symbol!" % ( balance, symbol))
@@ -203,12 +207,13 @@ def test_info(symbol):
 
 def net_margin():
     time.sleep(0.2)  # safe
+    print("My net balance calculating")
+
     balance = polo.returnMarginAccountSummary()
-    net_margin = float(balance["netValue"])
-    print("Margin Balance = %.5f  " % (net_margin))
-    time.sleep(0.2)  # safe
-    balance2 = polo.returnMarginAccountSummary()
-    current_margin = 100 * float(balance2["currentMargin"])
+    net_value = float(balance["netValue"])
+    print("Net Value = %.5f  " % (net_value))
+
+    current_margin = 100 * float(balance["currentMargin"])
     print("Current Margin = %.2f %s " % (current_margin, "%"))
 
 def trim_position(trim, symbols):
