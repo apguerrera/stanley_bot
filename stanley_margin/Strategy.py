@@ -1,7 +1,24 @@
 import poloniexAPI
 import time
 import sys
+import boto3  #pip install boto3
 
+import boto3
+
+# Get the service resource.
+dynamodb = boto3.resource('dynamodb')
+#clientdb = boto3.client('dynamodb')
+sleep = 2
+# Instantiate a table resource object without actually
+# creating a DynamoDB table. Note that the attributes of this table
+# are lazy-loaded: a request is not made nor are the attribute
+# values populated until the attributes
+# on the table resource are accessed or its load() method is called.
+
+#response = clientdb.list_tables()
+#print(response)
+
+db_table = dynamodb.Table('stanley_bot')
 
 # region ### Methods
 def calc_margin_alt(price, symbol):
@@ -51,10 +68,11 @@ def sell_margin_amount(bid, symbol, amount):
     return ret
 
 
-def buy_margin(ask, symbol):
+def buy_margin(ask, symbol, trade_msg):
     amount = calc_margin_btc(ask, symbol)
     value = float(amount) * ask
     factor = 0.05  # percentage of total margin avaliable to use on this trade
+    print(trade_msg)
     print("Buy %s amount = %s at price %f, value %f" % (symbol, amount, ask, value))
     ret = 'margin'
     if value > 0.02:  # enough margin to place a trade
@@ -72,6 +90,24 @@ def buy_margin(ask, symbol):
         if ret == 'margin':
             res = poloniexAPI.polo.marginBuy(symbol, ask, amount, lendingRate=0.02)  # if you want margin trade
             print("Res %s at price %f" % (res, ask))
+            time.sleep(sleep)  # safe
+            margin = poloniexAPI.polo.getMarginPosition(symbol)
+            ret_db = db_table.put_item(
+               Item={
+                    'symbol': symbol,
+                    'trade_ts':str(int(time.time())),
+                    'trade_time':time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+                    'price': str('{:.8f}'.format(ask)),
+                    'amount': str('{:.8f}'.format(abs(float(margin["total"])))),
+                    'trade': 'buy_margin',
+                    'trade_msg': str(trade_msg),
+                    'pl': str('0.0'),
+                    'res': str(res),
+                }
+            )
+            print("Db entry added: %s" % (ret_db))
+
+
             ret = 'success'
     elif value < 0.02:
         print("Res %s not enough margin balance: %f" % (symbol, value))
@@ -85,10 +121,11 @@ def buy_margin(ask, symbol):
     return ret
 
 
-def sell_margin(bid, symbol):
+def sell_margin(bid, symbol, trade_msg):
     amount = calc_margin_btc(bid, symbol)
     value = float(amount) * bid
     factor = 0.05  # percentage of total margin avaliable to use on this trade
+    print(trade_msg)
     print("Sell %s amount = %s at price %f, value %f" % (symbol, amount, bid, value))
     ret = 'margin'
     if value > 0.02:  # enough margin to place a trade
@@ -106,6 +143,23 @@ def sell_margin(bid, symbol):
         if ret == 'margin':
             res = poloniexAPI.sell_margin_api(symbol=symbol, bid=bid, amount=amount)  # if you want margin trade
             print("Res %s at price %f" % (res, bid))
+            time.sleep(sleep)  # safe
+            margin = poloniexAPI.polo.getMarginPosition(symbol)
+            ret_db = db_table.put_item(
+               Item={
+                    'symbol': symbol,
+                    'trade_ts':str(int(time.time())),
+                    'trade_time':time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+                    'price': str('{:.8f}'.format(bid)),
+                    'amount': str('{:.8f}'.format(abs(float(margin["total"])))),
+                    'trade': 'sell_margin',
+                    'trade_msg': str(trade_msg),
+                    'pl': str('0.0'),
+                    'res': str(res),
+                }
+            )
+            print("Db entry added: %s" % (ret_db))
+
             ret = 'success'
 
     elif value < 0.02:
@@ -121,14 +175,34 @@ def sell_margin(bid, symbol):
     #    raise BaseException('### Trade Sell error')
     return ret
 
-def exit_margin(price, symbol, ticket, confirm):
+def exit_margin(price, symbol, ticket, confirm, trade_msg):
     if ticket < confirm:
         print("Exit ticket: %s" % (str(ticket)))
         ticket = ticket + 1
     else:
-        print("Exit ticket close: %s" % (str(ticket)))
+        print(trade_msg)
+        margin = poloniexAPI.polo.getMarginPosition(symbol)
+        print("Exit ticket close: %s Margin: %s" % (str(ticket), str(margin["total"])))
+        time.sleep(sleep)
+        pl = poloniexAPI.get_pl(symbol)
+        print(pl)
+        time.sleep(sleep)
         res = poloniexAPI.polo.closeMarginPosition(currencyPair=symbol)  # close margin trade
         print("Res %s at price %f" % (res, price))
+        ret_db = db_table.put_item(
+            Item={
+                 'symbol': symbol,
+                 'trade_ts':str(int(time.time())),
+                 'trade_time':time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+                 'price': str('{:.8f}'.format(price)),
+                 'amount': str('{:.8f}'.format(abs(float(margin["total"])))),
+                 'trade': 'exit_margin',
+                 'trade_msg': str(trade_msg),
+                 'pl': str(pl),
+                 'res': str(res)
+            }
+        )
+        print("Db entry added: %s" % (ret_db))
         ticket = 0
 
     return ticket
@@ -149,38 +223,41 @@ class Strategy:
         self.initiate = 0
         self.trim = 0
         self.dont_trade = "none"
+        self.max_pl = 0.0
 
     def get_symbol(self):
         return self.SYMBOL
 
     def crossover_strategy(self, time_period, fast_period, mid_period, slow_period, confirm_period, trim_count):
         try:
+
             print("Symbol: %s  " % (self.SYMBOL ))
-            time.sleep(0.2)
+            time.sleep(sleep)
             price_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=3)
-            time.sleep(0.2)
+            time.sleep(sleep)
             fast_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=fast_period)
-            time.sleep(0.2)  # safe
+            time.sleep(sleep)  # safe
             slow_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=slow_period)
-            time.sleep(0.2)  # safe
+            time.sleep(sleep)  # safe
             mid_ma = poloniexAPI.get_ma(self.SYMBOL, timeframe=time_period, period=mid_period)
-            time.sleep(0.2)  # safe
+            time.sleep(sleep)  # safe
             self.trim  = trim_count
             exit_token = ""
+            trade_msg = ""
 
             net_margin = poloniexAPI.get_net_margin()  # btc total value
-            alt_margin = poloniexAPI.get_margin_total(self.SYMBOL)
+            alt_margin = poloniexAPI.get_margin_total(self.SYMBOL) # total margin amount in BTC
             current_btc = poloniexAPI.get_btc_balance(self.SYMBOL)
-            time.sleep(0.2)  # safe
+            time.sleep(sleep)  # safe
 
             current_alt = poloniexAPI.get_margin_balance(self.SYMBOL)
-            time.sleep(0.2)  # safe
+            time.sleep(sleep)  # safe
             last_price = poloniexAPI.get_orderbook(self.SYMBOL)
-            time.sleep(0.2)  # safe
+            time.sleep(sleep)  # safe
 
             pl = poloniexAPI.get_pl(self.SYMBOL)
-
-            print("%s profit and loss %s " % (self.SYMBOL, str(pl)))
+            self.max_pl = max(float(self.max_pl),float(pl))
+            print("%s profit and loss %.3f. max_pl = %.3f " % (self.SYMBOL, pl, self.max_pl))
 
 
             alt_converted = float(current_alt)  * float(last_price['bids'][0][0])
@@ -189,7 +266,7 @@ class Strategy:
             current_margin = poloniexAPI.get_current_margin()  # ratio
 
             margin_type = poloniexAPI.get_margin_type(self.SYMBOL)
-            time.sleep(0.2)  # safe
+            time.sleep(sleep)  # safe
             if margin_type == "short":
                 self.is_buy_open = False
                 self.is_sell_open = True
@@ -210,26 +287,26 @@ class Strategy:
             if self.is_buy_open:
                 price = ask
                 if fast_ma < mid_ma and price_ma < fast_ma:
-                    print("%s self fast_ma < mid_ma" % (self.SYMBOL))
+                    trade_msg = "%s self fast_ma < mid_ma" % (self.SYMBOL)
                     exit_token = "slow_exit"
                 elif price_ma < slow_ma:
-                    print("%s self price_ma < slow_ma " % (self.SYMBOL))
+                    trade_msg ="%s self price_ma < slow_ma " % (self.SYMBOL)
                     exit_token = "slow_exit"
                 elif fast_ma > slow_ma and fast_ma > mid_ma:
-                    print("%s self fast_ma > slow_ma " % (self.SYMBOL ))
+                    trade_msg = "%s self fast_ma > slow_ma " % (self.SYMBOL )
                     exit_token = "topup"
 
             # if short position
             elif self.is_sell_open:
                 price = bid
                 if fast_ma > mid_ma and price_ma > fast_ma:
-                    print("%s self fast_ma > mid_ma" % (self.SYMBOL))
+                    trade_msg = "%s self fast_ma > mid_ma" % (self.SYMBOL)
                     exit_token = "slow_exit"
-                elif price_ma > slow_ma:     # exit on reversal
-                    print("%s self price_ma > slow_ma " % (self.SYMBOL))
+                elif price_ma  > slow_ma:     # exit on reversal
+                    trade_msg = "%s self price_ma > slow_ma " % (self.SYMBOL)
                     exit_token = "slow_exit"
                 elif fast_ma < slow_ma and fast_ma < mid_ma:  # top up if successful
-                    print("%s self fast_ma < mid_ma < slow_ma " % (self.SYMBOL ))
+                    trade_msg = "%s self fast_ma < mid_ma < slow_ma " % (self.SYMBOL )
                     exit_token = "topup"
 
             # New trades signals if no positions are open
@@ -239,16 +316,18 @@ class Strategy:
                     if  fast_ma < (0.999 * mid_ma) and price_ma < slow_ma and price_ma < mid_ma and price_ma < fast_ma: # and slow_ma <= mid_ma:
 
                         if self.dont_trade != "sell":
-                            print("%s is_sell_open new entry" % (self.SYMBOL ))
+                            trade_msg = "%s is_sell_open new entry" % (self.SYMBOL )
                             exit_token = "new_sell"
                         else:
                             print("%s is flagged dont_trade %s" % (self.SYMBOL, self.dont_trade ))
                     elif  fast_ma > (1.001 * mid_ma) and price_ma > slow_ma and price_ma > mid_ma and price_ma > fast_ma: #  and slow_ma >= mid_ma:
                         if self.dont_trade != "buy":
-                            print("%s is_buy_open new entry" % (self.SYMBOL ))
+                            trade_msg = "%s is_buy_open new entry" % (self.SYMBOL )
                             exit_token = "new_buy"
-
+                        else:
+                            print("%s is flagged dont_trade %s" % (self.SYMBOL, self.dont_trade ))
             if self.is_buy_open or self.is_sell_open:  # if open position
+
                 #print("%s Strategy" % (self.SYMBOL))
                 if  current_margin < 0.38 :    # if current trades less than minimum desired 38 percent margin
                     print("%s margin less than 38 percent %s " % (self.SYMBOL, str(current_margin)))
@@ -258,19 +337,27 @@ class Strategy:
                         if self.is_sell_open:
                             self.dont_trade = "sell"
                         exit_token = "exit"
-                        print("%s fast exit < 2pc" % (self.SYMBOL))
+                        trade_msg = "%s fast exit < 2pc" % (self.SYMBOL)
 
                     else:
                         exit_token = "slow_exit"
-                        print("%s slow exit < 38pc margin" % (self.SYMBOL))
+                        trade_msg = "%s slow exit < 38pc margin" % (self.SYMBOL)
 
-                if pl < -5:
+                if pl < (self.max_pl - 10):
                     if self.is_buy_open:
                         self.dont_trade = "buy"
                     if self.is_sell_open:
                         self.dont_trade = "sell"
+                    exit_token = "exit"
+                    trade_msg = "%s exit < 13pc hard stop loss " % (self.SYMBOL)
+
+                if pl < (self.max_pl - 9):
                     exit_token = "slow_exit"
-                    print("%s fast exit < 5pc " % (self.SYMBOL))
+                    trade_msg = "%s slow_exit < 10pc stop loss " % (self.SYMBOL)
+
+                if pl < (self.max_pl - 6) and abs(alt_margin) > 0.07:   # stop loss for bigger trades
+                    exit_token = "slow_exit"
+                    trade_msg = "%s slow_exit < 8pc with high margin " % (self.SYMBOL)
 
                 if self.trim > 0:   # if the trim trigger is true then close position
                     print("%s self trim > 0 %.0f " % (self.SYMBOL, self.trim))
@@ -280,7 +367,7 @@ class Strategy:
                         if self.is_sell_open:
                             self.dont_trade = "sell"
                         exit_token = "exit"
-                        print("%s exit_token %s" % (self.SYMBOL, exit_token))
+                        trade_msg = "%s exit_token %s" % (self.SYMBOL, exit_token)
 
                 if abs(alt_margin) > net_margin :    # max margin per coin
                     #exit_token = "exit"
@@ -288,19 +375,22 @@ class Strategy:
 
             # execute trades
             if exit_token == "exit":   # exit open trade
-                self.ticket = exit_margin(ask, self.SYMBOL, 1, 1 )
+                self.ticket = exit_margin(ask, self.SYMBOL, 1, 1, trade_msg )
                 exit_token = " "
                 self.is_buy_open = False
                 self.is_sell_open = False
                 self.trim = 0
+                self.max_pl = 0
 
             # exit after confirmation
             elif exit_token == "slow_exit":
                 if self.ticket < confirm_period:
                     self.ticket = self.ticket + 1
                 else:
-                    self.ticket = exit_margin(price, self.SYMBOL, self.ticket, confirm_period)
+                    self.ticket = exit_margin(price, self.SYMBOL, self.ticket, confirm_period, trade_msg)
                     self.trim = 0
+                    exit_token = " "
+                    self.max_pl = 0
 
             # new trade signals
             elif exit_token == "new_buy" or exit_token == "new_sell":
@@ -309,9 +399,9 @@ class Strategy:
                     self.ticket = self.ticket + 2
                 else:
                     if exit_token == "new_buy":
-                        margin_res = buy_margin(ask, self.SYMBOL)
+                        margin_res = buy_margin(ask, self.SYMBOL, trade_msg)
                     elif exit_token == "new_sell":
-                        margin_res = sell_margin(bid, self.SYMBOL)
+                        margin_res = sell_margin(bid, self.SYMBOL, trade_msg)
                     print("Margin Res: %s" % (margin_res))
                     if  margin_res == "success":
                         self.ticket = 0
@@ -328,9 +418,9 @@ class Strategy:
                             self.ticket = self.ticket + 1
                         else:
                             if self.is_buy_open:
-                                margin_res = buy_margin(ask, self.SYMBOL)
+                                margin_res = buy_margin(ask, self.SYMBOL, trade_msg)
                             elif self.is_sell_open:
-                                margin_res = sell_margin(bid, self.SYMBOL)
+                                margin_res = sell_margin(bid, self.SYMBOL, trade_msg)
                             print("Margin Res: %s" % (margin_res))
                             if  margin_res == "success":
                                 self.ticket = 0

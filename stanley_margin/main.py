@@ -22,14 +22,12 @@ symbol_parm = {
             , "BTC_FCT": [140, 50, 14, 120]
             , "BTC_STR": [250, 55, 20, 120]
             #, "BTC_STR": [120, 30, 15, 30]
-
             , "BTC_MAID": [120, 60, 15, 120]
             #, "BTC_XMR": [220, 100, 20, 120]
             , "BTC_XMR": [180, 60, 18, 120]
-
             , "BTC_BTS": [90, 30, 15, 120]
             #, "BTC_DASH": [MA_SLOW, MA_MID, MA_FAST, MA_TIME]
-            , "BTC_CLAM": [140, 70, 18, 120]
+            #, "BTC_CLAM": [140, 70, 18, 120]
             #, "BTC_DOGE": [MA_SLOW, MA_MID, MA_FAST, MA_TIME]
         }
 
@@ -69,6 +67,9 @@ if __name__ == "__main__":
     trim = args.trim
     kill_symbol = args.kill
 
+
+
+    # kill symbols
     if any(kill_symbol in s for s in symbols):
         matching = [s for s in symbols if kill_symbol in s]
         for symbol in matching :
